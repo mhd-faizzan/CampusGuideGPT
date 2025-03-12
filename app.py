@@ -63,14 +63,14 @@ st.set_page_config(page_title="CampusGuideGPT", page_icon="🎓", layout="wide")
 st.markdown("""
     <style>
     .title {
-        font-size: 36px;
+        font-size: 4vw;  /* Responsive font size */
         color: #4CAF50;
         font-weight: bold;
         text-align: center;
         margin-bottom: 20px;
     }
     .sub-title {
-        font-size: 18px;
+        font-size: 2vw;  /* Responsive font size */
         color: #555;
         text-align: center;
         margin-bottom: 20px;
@@ -97,10 +97,29 @@ st.markdown("""
         background-color: #2F2F2F;  /* Darker background */
         color: white;  /* White text for better contrast */
         margin-top: 20px;
+        max-width: 800px;  /* Prevents answer box from stretching too much */
+        margin-left: auto;
+        margin-right: auto;
     }
     .warning {
         color: #e65100;
         font-weight: bold;
+    }
+    @media (max-width: 768px) {
+        .title {
+            font-size: 6vw;  /* Adjust font size for smaller screens */
+        }
+        .sub-title {
+            font-size: 4vw;  /* Adjust font size for smaller screens */
+        }
+        .search-button {
+            font-size: 16px;  /* Adjust button size */
+            padding: 8px 16px;
+        }
+        .answer-box {
+            max-width: 90%;  /* Allow answer box to take up more space on mobile */
+            padding: 10px;
+        }
     }
     </style>
 """, unsafe_allow_html=True)
