@@ -32,15 +32,18 @@ def get_groq_response(prompt):
     data = {
         "model": "llama-3.3-70b-versatile",
         "messages": [{"role": "user", "content": prompt}],
-        "max_tokens": 4096,
+        "max_tokens": 1024,
         "temperature": 0.7,
         "top_p": 0.9,
         "stop": ["According to", "Based on", "As per the information"],
     }
     try:
-        response = requests.post(GROQ_URL, headers=HEADERS, json=data)
+        response = requests.post(GROQ_URL, headers=HEADERS, json=data, timeout=10)  # Set timeout to prevent long waits
         response.raise_for_status()
-        result = response.json()
+        return response.json()['choices'][0]['message']['content']
+    except requests.exceptions.RequestException as e:
+        st.error(f"Error fetching Groq response: {e}")
+        return None
         
         # Extract the raw response without unnecessary phrases
         llm_response = result['choices'][0]['message']['content']
@@ -126,7 +129,7 @@ if st.button("Search", key="search_button", help="Click to get an answer!") or s
                 results = index.query(
                     namespace="ns1",
                     vector=query_embedding,
-                    top_k=5,
+                    top_k=3,
                     include_metadata=True
                 )
 
