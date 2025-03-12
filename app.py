@@ -94,7 +94,8 @@ st.markdown("""
         border: 2px solid #4CAF50;
         border-radius: 10px;
         padding: 15px;
-        background-color: #f9f9f9;
+        background-color: #2F2F2F;  /* Darker background */
+        color: white;  /* White text for better contrast */
         margin-top: 20px;
     }
     .warning {
