@@ -38,12 +38,9 @@ def get_groq_response(prompt):
         "stop": ["According to", "Based on", "As per the information"],
     }
     try:
-        response = requests.post(GROQ_URL, headers=HEADERS, json=data, timeout=10)  # Set timeout to prevent long waits
+        response = requests.post(GROQ_URL, headers=HEADERS, json=data)
         response.raise_for_status()
-        return response.json()['choices'][0]['message']['content']
-    except requests.exceptions.RequestException as e:
-        st.error(f"Error fetching Groq response: {e}")
-        return None
+        result = response.json()
         
         # Extract the raw response without unnecessary phrases
         llm_response = result['choices'][0]['message']['content']
