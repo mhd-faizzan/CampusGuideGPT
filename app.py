@@ -27,47 +27,93 @@ HEADERS = {
     "Content-Type": "application/json"
 }
 
+# Function to Get Response from Groq API
+def get_groq_response(prompt):
+    data = {
+        "model": "llama-3.3-70b-versatile",  # Updated model
+        "messages": [{"role": "user", "content": prompt}],
+        "max_tokens": 4096,  # Adjust if needed
+        "temperature": 0.7,  # Controls creativity
+        "top_p": 0.9,
+        "stop": ["According to", "Based on", "As per the information"],  # Prevents robotic phrases
+    }
+    try:
+        response = requests.post(GROQ_URL, headers=HEADERS, json=data)
+        response.raise_for_status()  # Raise error for bad status codes
+        result = response.json()
+        
+        # Extract the raw response without unnecessary phrases
+        llm_response = result['choices'][0]['message']['content']
+
+        # Remove common AI disclaimers
+        remove_phrases = ["According to the information provided,", "Based on the given data,", "As per the details you provided,"]
+        for phrase in remove_phrases:
+            llm_response = llm_response.replace(phrase, "").strip()
+
+        return llm_response
+
+    except requests.exceptions.RequestException as e:
+        st.error(f"Error fetching Groq response: {e}")
+        return None
+
 # Streamlit UI Styling
 st.set_page_config(page_title="CampusGuideGPT", page_icon="🎓", layout="wide")
 
-# Typewriter Effect for Title (Using JavaScript)
+# Custom CSS for styling
 st.markdown("""
     <style>
-    .title-container {
-        text-align: center;
-        font-size: 40px;
-        font-weight: bold;
+    .title {
+        font-size: 36px;
         color: #4CAF50;
+        font-weight: bold;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    .sub-title {
+        font-size: 18px;
+        color: #555;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    .search-button {
+        display: block;
+        margin: 20px auto;
+        padding: 10px 20px;
+        background-color: #4CAF50;
+        color: white;
+        border-radius: 5px;
+        border: none;
+        font-size: 18px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+    .search-button:hover {
+        background-color: #45a049;
+    }
+    .answer-box {
+        border: 2px solid #4CAF50;
+        border-radius: 10px;
+        padding: 15px;
+        background-color: #2F2F2F;  /* Darker background */
+        color: white;  /* White text for better contrast */
         margin-top: 20px;
     }
-    </style>
-
-    <div class="title-container">
-        <span id="typewriter"></span>
-    </div>
-
-    <script>
-    var text = "CampusGuideGPT";
-    var i = 0;
-    function typeEffect() {
-        if (i < text.length) {
-            document.getElementById("typewriter").innerHTML += text.charAt(i);
-            i++;
-            setTimeout(typeEffect, 150); // Adjust speed of typing
-        }
+    .warning {
+        color: #e65100;
+        font-weight: bold;
     }
-    typeEffect();
-    </script>
+    </style>
 """, unsafe_allow_html=True)
 
-# Subtitle
-st.markdown("<p style='text-align: center; font-size: 20px; color: #555;'>Ask anything about Hochschule Harz and more universities coming soon!</p>", unsafe_allow_html=True)
+# Streamlit UI Content
+st.markdown('<h1 class="title">CampusGuideGPT</h1>', unsafe_allow_html=True)
+st.markdown('<p class="sub-title">Ask anything about Hochschule Harz and more universities data coming soon!</p>', unsafe_allow_html=True)
 
 # Query System
 query = st.text_input("Enter your question:", placeholder="E.g., How do I apply for a Master's program in Germany?")
 
 # Search button
-if st.button("Search"):
+if st.button("Search", key="search_button", help="Click to get an answer!"):
     if query:
         with st.spinner("Processing your query..."):
             query_embedding = model.encode(query).tolist()
@@ -85,14 +131,21 @@ if st.button("Search"):
                     for match in results["matches"]:
                         context += f"**Question**: {match['metadata']['question']}\n**Answer**: {match['metadata']['answer']}\n\n"
 
-                    response = f"Context:\n{context}\n\nQuestion: {query}\nAnswer:"
-                    
-                    st.markdown(f'<div style="border: 2px solid #4CAF50; border-radius: 10px; padding: 15px; background-color: #2F2F2F; color: white; margin-top: 20px;"><h3>Answer:</h3><p>{response}</p></div>', unsafe_allow_html=True)
+                    prompt = f"Context:\n{context}\n\nQuestion: {query}\nAnswer:"
+                    response = get_groq_response(prompt)
+
+                    if response:
+                        st.markdown(f'<div class="answer-box"><h3>Answer:</h3><p>{response}</p></div>', unsafe_allow_html=True)
+                    else:
+                        st.markdown('<p class="warning">Could not retrieve a specific answer from Groq API. Try asking a different question.</p>', unsafe_allow_html=True)
 
                 else:
-                    st.warning("No matching results found in Pinecone. Falling back to LLM's general knowledge...")
-                    response = query  # Placeholder for actual LLM response
-                    st.markdown(f'<div style="border: 2px solid #4CAF50; border-radius: 10px; padding: 15px; background-color: #2F2F2F; color: white; margin-top: 20px;"><h3>Answer:</h3><p>{response}</p></div>', unsafe_allow_html=True)
+                    st.markdown('<p class="warning">No matching results found in Pinecone. Falling back to LLM\'s general knowledge...</p>', unsafe_allow_html=True)
+                    response = get_groq_response(query)
+                    if response:
+                        st.markdown(f'<div class="answer-box"><h3>Answer:</h3><p>{response}</p></div>', unsafe_allow_html=True)
+                    else:
+                        st.markdown('<p class="warning">Sorry, we couldn\'t find an answer. Please try again later.</p>', unsafe_allow_html=True)
 
             except Exception as e:
                 st.error(f"An error occurred while querying Pinecone: {e}")
