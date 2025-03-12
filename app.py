@@ -37,52 +37,71 @@ def get_groq_response(prompt):
         "top_p": 0.9,
         "stop": ["According to", "Based on", "As per the information"],  # Prevents robotic phrases
     }
-    response = requests.post(GROQ_URL, headers=HEADERS, json=data)
-    result = response.json()
-    
-    # Extract the raw response without unnecessary phrases
-    llm_response = result['choices'][0]['message']['content']
+    try:
+        response = requests.post(GROQ_URL, headers=HEADERS, json=data)
+        response.raise_for_status()  # Raise error for bad status codes
+        result = response.json()
+        
+        # Extract the raw response without unnecessary phrases
+        llm_response = result['choices'][0]['message']['content']
 
-    # Remove common AI disclaimers
-    remove_phrases = ["According to the information provided,", "Based on the given data,", "As per the details you provided,"]
-    for phrase in remove_phrases:
-        llm_response = llm_response.replace(phrase, "").strip()
+        # Remove common AI disclaimers
+        remove_phrases = ["According to the information provided,", "Based on the given data,", "As per the details you provided,"]
+        for phrase in remove_phrases:
+            llm_response = llm_response.replace(phrase, "").strip()
 
-    return llm_response
+        return llm_response
+
+    except requests.exceptions.RequestException as e:
+        st.error(f"Error fetching Groq response: {e}")
+        return None
 
 # Streamlit UI
-st.title("CampusGuideGPT (Powered by Pinecone & Groq)")
+st.set_page_config(page_title="CampusGuideGPT", page_icon="🎓", layout="wide")
+
+st.title("CampusGuideGPT: AI-powered University Guide")
+st.markdown("Ask any question related to studying abroad, especially in Germany, and get AI-powered answers.")
 
 # Query System
-query = st.text_input("Enter your question:")
+query = st.text_input("Enter your question:", placeholder="E.g., How do I apply for a Master's program in Germany?")
 
 if query:
-    query_embedding = model.encode(query).tolist()
-    
-    try:
-        results = index.query(
-            namespace="ns1",
-            vector=query_embedding,
-            top_k=5,
-            include_metadata=True
-        )
+    with st.spinner("Processing your query..."):
+        query_embedding = model.encode(query).tolist()
+        
+        try:
+            results = index.query(
+                namespace="ns1",
+                vector=query_embedding,
+                top_k=5,
+                include_metadata=True
+            )
 
-        if results and "matches" in results:
-            context = ""
-            for match in results["matches"]:
-                context += f"Question: {match['metadata']['question']}\nAnswer: {match['metadata']['answer']}\n\n"
+            if results and "matches" in results:
+                context = ""
+                for match in results["matches"]:
+                    context += f"**Question**: {match['metadata']['question']}\n**Answer**: {match['metadata']['answer']}\n\n"
 
-            prompt = f"Context:\n{context}\n\nQuestion: {query}\nAnswer:"
-            response = get_groq_response(prompt)
+                prompt = f"Context:\n{context}\n\nQuestion: {query}\nAnswer:"
+                response = get_groq_response(prompt)
 
-            if response:
-                st.write("### Answer:")
-                st.write(response)
-        else:
-            st.warning("No matching results found in Pinecone. Falling back to LLM's general knowledge...")
-            response = get_groq_response(query)
-            st.write("### Answer:")
-            st.write(response)
+                if response:
+                    st.success("Here is your answer:")
+                    st.write(response)
+                else:
+                    st.warning("Could not retrieve a specific answer from Groq API. Try asking a different question.")
 
-    except Exception as e:
-        st.error(f"Error querying Pinecone: {e}")
+            else:
+                st.warning("No matching results found in Pinecone. Falling back to LLM's general knowledge...")
+                response = get_groq_response(query)
+                if response:
+                    st.success("Here is your answer:")
+                    st.write(response)
+                else:
+                    st.error("Sorry, we couldn't find an answer. Please try again later.")
+
+        except Exception as e:
+            st.error(f"An error occurred while querying Pinecone: {e}")
+
+else:
+    st.info("Please enter a question above to get started.")
