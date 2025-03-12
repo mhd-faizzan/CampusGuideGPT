@@ -100,6 +100,18 @@ st.markdown("""
         max-width: 800px;  /* Prevents answer box from stretching too much */
         margin-left: auto;
         margin-right: auto;
+        opacity: 0; /* Start hidden */
+        animation: floatIn 1.5s ease-out forwards; /* Animation effect */
+    }
+    @keyframes floatIn {
+        0% {
+            transform: translateY(50px);
+            opacity: 0;
+        }
+        100% {
+            transform: translateY(0);
+            opacity: 1;
+        }
     }
     .warning {
         color: #e65100;
