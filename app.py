@@ -30,28 +30,17 @@ HEADERS = {
 # Function to Get Response from Groq API
 def get_groq_response(prompt):
     data = {
-        "model": "llama-3.3-70b-versatile",  # Updated model
+        "model": "llama-3.3-70b-versatile",  
         "messages": [{"role": "user", "content": prompt}],
-        "max_tokens": 4096,  # Adjust if needed
-        "temperature": 0.7,  # Controls creativity
+        "max_tokens": 4096,  
+        "temperature": 0.7,  
         "top_p": 0.9,
-        "stop": ["According to", "Based on", "As per the information"],  # Prevents robotic phrases
     }
     try:
         response = requests.post(GROQ_URL, headers=HEADERS, json=data)
-        response.raise_for_status()  # Raise error for bad status codes
+        response.raise_for_status()
         result = response.json()
-        
-        # Extract the raw response without unnecessary phrases
-        llm_response = result['choices'][0]['message']['content']
-
-        # Remove common AI disclaimers
-        remove_phrases = ["According to the information provided,", "Based on the given data,", "As per the details you provided,"]
-        for phrase in remove_phrases:
-            llm_response = llm_response.replace(phrase, "").strip()
-
-        return llm_response
-
+        return result['choices'][0]['message']['content']
     except requests.exceptions.RequestException as e:
         st.error(f"Error fetching Groq response: {e}")
         return None
@@ -59,15 +48,23 @@ def get_groq_response(prompt):
 # Streamlit UI Styling
 st.set_page_config(page_title="CampusGuideGPT", page_icon="🎓", layout="wide")
 
-# Custom CSS for styling
+# Custom CSS for better UI
 st.markdown("""
     <style>
+    @keyframes typing {
+        from { width: 0 }
+        to { width: 100% }
+    }
     .title {
         font-size: 36px;
         color: #4CAF50;
         font-weight: bold;
         text-align: center;
-        margin-bottom: 20px;
+        overflow: hidden;
+        border-right: 3px solid #4CAF50;
+        white-space: nowrap;
+        width: 100%;
+        animation: typing 2s steps(20, end), blink-caret 0.75s step-end infinite;
     }
     .sub-title {
         font-size: 18px;
@@ -75,9 +72,13 @@ st.markdown("""
         text-align: center;
         margin-bottom: 20px;
     }
+    .search-box {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+    }
     .search-button {
-        display: block;
-        margin: 20px auto;
         padding: 10px 20px;
         background-color: #4CAF50;
         color: white;
@@ -94,9 +95,11 @@ st.markdown("""
         border: 2px solid #4CAF50;
         border-radius: 10px;
         padding: 15px;
-        background-color: #2F2F2F;  /* Darker background */
-        color: white;  /* White text for better contrast */
+        background-color: #2F2F2F;
+        color: white;
         margin-top: 20px;
+        font-size: 16px;
+        line-height: 1.5;
     }
     .warning {
         color: #e65100;
@@ -105,19 +108,18 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Streamlit UI Content
+# Streamlit UI Content with Typewriter Effect
 st.markdown('<h1 class="title">CampusGuideGPT</h1>', unsafe_allow_html=True)
 st.markdown('<p class="sub-title">Ask anything about Hochschule Harz and more universities data coming soon!</p>', unsafe_allow_html=True)
 
-# Query System
-query = st.text_input("Enter your question:", placeholder="E.g., How do I apply for a Master's program in Germany?")
+# Query System with "Enter" key support
+query = st.text_input("Enter your question:", placeholder="E.g., How do I apply for a Master's program in Germany?", key="query_input")
 
-# Search button
-if st.button("Search", key="search_button", help="Click to get an answer!"):
+# Function to Process Query
+def process_query():
     if query:
         with st.spinner("Processing your query..."):
             query_embedding = model.encode(query).tolist()
-
             try:
                 results = index.query(
                     namespace="ns1",
@@ -125,20 +127,16 @@ if st.button("Search", key="search_button", help="Click to get an answer!"):
                     top_k=5,
                     include_metadata=True
                 )
-
                 if results and "matches" in results:
                     context = ""
                     for match in results["matches"]:
                         context += f"**Question**: {match['metadata']['question']}\n**Answer**: {match['metadata']['answer']}\n\n"
-
                     prompt = f"Context:\n{context}\n\nQuestion: {query}\nAnswer:"
                     response = get_groq_response(prompt)
-
                     if response:
                         st.markdown(f'<div class="answer-box"><h3>Answer:</h3><p>{response}</p></div>', unsafe_allow_html=True)
                     else:
                         st.markdown('<p class="warning">Could not retrieve a specific answer from Groq API. Try asking a different question.</p>', unsafe_allow_html=True)
-
                 else:
                     st.markdown('<p class="warning">No matching results found in Pinecone. Falling back to LLM\'s general knowledge...</p>', unsafe_allow_html=True)
                     response = get_groq_response(query)
@@ -146,8 +144,16 @@ if st.button("Search", key="search_button", help="Click to get an answer!"):
                         st.markdown(f'<div class="answer-box"><h3>Answer:</h3><p>{response}</p></div>', unsafe_allow_html=True)
                     else:
                         st.markdown('<p class="warning">Sorry, we couldn\'t find an answer. Please try again later.</p>', unsafe_allow_html=True)
-
             except Exception as e:
                 st.error(f"An error occurred while querying Pinecone: {e}")
     else:
         st.warning("Please enter a question to search.")
+
+# Search Box UI with Button and "Enter" Key Support
+col1, col2 = st.columns([4, 1])
+with col1:
+    query_input = st.text_input("Ask a question", placeholder="Type here and press Enter", key="query", on_change=process_query)
+
+with col2:
+    if st.button("Search", key="search_button", help="Click to get an answer!"):
+        process_query()
