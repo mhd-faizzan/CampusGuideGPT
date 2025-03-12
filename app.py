@@ -64,7 +64,8 @@ st.markdown("""
         border-right: 3px solid #4CAF50;
         white-space: nowrap;
         width: 100%;
-        animation: typing 2s steps(20, end), blink-caret 0.75s step-end infinite;
+        display: inline-block;
+        animation: typing 2s steps(20, end);
     }
     .sub-title {
         font-size: 18px;
@@ -113,10 +114,8 @@ st.markdown('<h1 class="title">CampusGuideGPT</h1>', unsafe_allow_html=True)
 st.markdown('<p class="sub-title">Ask anything about Hochschule Harz and more universities data coming soon!</p>', unsafe_allow_html=True)
 
 # Query System with "Enter" key support
-query = st.text_input("Enter your question:", placeholder="E.g., How do I apply for a Master's program in Germany?", key="query_input")
-
-# Function to Process Query
 def process_query():
+    query = st.session_state.query.strip()
     if query:
         with st.spinner("Processing your query..."):
             query_embedding = model.encode(query).tolist()
@@ -149,11 +148,7 @@ def process_query():
     else:
         st.warning("Please enter a question to search.")
 
-# Search Box UI with Button and "Enter" Key Support
-col1, col2 = st.columns([4, 1])
-with col1:
-    query_input = st.text_input("Ask a question", placeholder="Type here and press Enter", key="query", on_change=process_query)
-
-with col2:
-    if st.button("Search", key="search_button", help="Click to get an answer!"):
-        process_query()
+# Search Box UI with Single Input Field
+txt_input = st.text_input("Ask a question", placeholder="Type here and press Enter", key="query", on_change=process_query)
+if st.button("Search", key="search_button", help="Click to get an answer!"):
+    process_query()
