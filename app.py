@@ -27,30 +27,35 @@ HEADERS = {
     "Content-Type": "application/json"
 }
 
-# Initialize Session State for Chat Memory
-if "chat_history" not in st.session_state:
-    st.session_state["chat_history"] = []
+# Initialize session state for history
+if "history" not in st.session_state:
+    st.session_state["history"] = []  # Stores (query, response) tuples
 
-# Function to Get Response from Groq API with Memory
-def get_groq_response(prompt, history):
-    """Send conversation history and user query to the LLM"""
-    messages = [{"role": "system", "content": "You are an AI assistant providing university guidance."}]
-    messages += history  # Include past conversations
-    messages.append({"role": "user", "content": prompt})
-
+# Function to Get Response from Groq API
+def get_groq_response(prompt):
     data = {
         "model": "llama-3.3-70b-versatile",
-        "messages": messages,
+        "messages": [{"role": "user", "content": prompt}],
         "max_tokens": 1024,
         "temperature": 0.7,
         "top_p": 0.9,
+        "stop": ["According to", "Based on", "As per the information"],
     }
-
     try:
         response = requests.post(GROQ_URL, headers=HEADERS, json=data)
         response.raise_for_status()
         result = response.json()
-        return result['choices'][0]['message']['content']
+
+        # Extract the raw response without unnecessary phrases
+        llm_response = result['choices'][0]['message']['content']
+
+        # Remove common AI disclaimers
+        remove_phrases = ["According to the information provided,", "Based on the given data,", "As per the details you provided,"]
+        for phrase in remove_phrases:
+            llm_response = llm_response.replace(phrase, "").strip()
+
+        return llm_response
+
     except requests.exceptions.RequestException as e:
         st.error(f"Error fetching Groq response: {e}")
         return None
@@ -108,7 +113,7 @@ st.markdown("""
 st.markdown('<h1 class="title">CampusGuideGPT</h1>', unsafe_allow_html=True)
 st.markdown('<p class="sub-title">Ask anything about Hochschule Harz and more universities data coming soon!</p>', unsafe_allow_html=True)
 
-# User Query Input
+# Query System
 query = st.text_input("Enter your question:", placeholder="E.g., How do I apply for a Master's program in Germany?", key="query_input")
 
 # Enable search on Enter key
@@ -122,36 +127,35 @@ if st.button("Search", key="search_button", help="Click to get an answer!") or s
             query_embedding = model.encode(query).tolist()
 
             try:
-                # Query Pinecone for relevant context
-                results = index.query(namespace="ns1", vector=query_embedding, top_k=3, include_metadata=True)
+                results = index.query(
+                    namespace="ns1",
+                    vector=query_embedding,
+                    top_k=3,
+                    include_metadata=True
+                )
 
                 if results and "matches" in results:
                     context = ""
                     for match in results["matches"]:
                         context += f"**Question**: {match['metadata']['question']}\n**Answer**: {match['metadata']['answer']}\n\n"
 
-                    prompt = f"Context:\n{context}\n\nUser Question: {query}\nAI Answer:"
-                    response = get_groq_response(prompt, st.session_state["chat_history"])
+                    prompt = f"Context:\n{context}\n\nQuestion: {query}\nAnswer:"
+                    response = get_groq_response(prompt)
 
                     if response:
-                        # Store conversation history
-                        st.session_state["chat_history"].append({"role": "user", "content": query})
-                        st.session_state["chat_history"].append({"role": "assistant", "content": response})
-
                         st.markdown(f'<div class="answer-box"><h3>Answer:</h3><p>{response}</p></div>', unsafe_allow_html=True)
+                        # Store query-response pair in session state
+                        st.session_state["history"].append((query, response))
                     else:
                         st.markdown('<p class="warning">Could not retrieve a specific answer from Groq API. Try asking a different question.</p>', unsafe_allow_html=True)
 
                 else:
-                    # No Pinecone results, fallback to LLM's general knowledge
                     st.markdown('<p class="warning">No matching results found in Pinecone. Falling back to LLM\'s general knowledge...</p>', unsafe_allow_html=True)
-                    response = get_groq_response(query, st.session_state["chat_history"])
-
+                    response = get_groq_response(query)
                     if response:
-                        st.session_state["chat_history"].append({"role": "user", "content": query})
-                        st.session_state["chat_history"].append({"role": "assistant", "content": response})
-
                         st.markdown(f'<div class="answer-box"><h3>Answer:</h3><p>{response}</p></div>', unsafe_allow_html=True)
+                        # Store query-response pair in session state
+                        st.session_state["history"].append((query, response))
                     else:
                         st.markdown('<p class="warning">Sorry, we couldn\'t find an answer. Please try again later.</p>', unsafe_allow_html=True)
 
@@ -159,11 +163,3 @@ if st.button("Search", key="search_button", help="Click to get an answer!") or s
                 st.error(f"An error occurred while querying Pinecone: {e}")
     else:
         st.warning("Please enter a question to search.")
-
-# Display Chat History
-st.markdown("### Chat History")
-for chat in st.session_state["chat_history"]:
-    if chat["role"] == "user":
-        st.markdown(f'<div style="color: #2196F3;"><b>You:</b> {chat["content"]}</div>', unsafe_allow_html=True)
-    else:
-        st.markdown(f'<div style="color: #4CAF50;"><b>CampusGuideGPT:</b> {chat["content"]}</div>', unsafe_allow_html=True)
