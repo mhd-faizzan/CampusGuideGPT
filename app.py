@@ -18,7 +18,7 @@ pc = Pinecone(api_key=PINECONE_API_KEY)
 index = pc.Index(PINECONE_INDEX, host=PINECONE_HOST)
 
 # Load Embedding Model
-model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
+model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2', device='cpu')   # Changed
 
 # Groq API Setup
 GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
