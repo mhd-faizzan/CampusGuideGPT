@@ -1,5 +1,5 @@
 import streamlit as st
-from sentence\_transformers import SentenceTransformer
+from sentence_transformers import SentenceTransformer
 from pinecone import Pinecone
 import requests
 
