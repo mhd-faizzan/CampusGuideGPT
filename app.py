@@ -18,7 +18,7 @@ pc = Pinecone(api_key=PINECONE_API_KEY)
 index = pc.Index(PINECONE_INDEX, host=PINECONE_HOST)
 
 # Load Embedding Model
-model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
+model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')  # remove device
 
 # Groq API Setup
 GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
@@ -29,12 +29,12 @@ HEADERS = {
 
 # Initialize session state for history
 if "history" not in st.session_state:
-    st.session_state["history"] = []
+    st.session_state["history"] = []  # Stores (query, response) tuples
 
 # Function to Get Response from Groq API
 def get_groq_response(prompt):
     data = {
-        "model": "llama3-70b-8192",
+        "model": "llama-3.3-70b-versatile",
         "messages": [{"role": "user", "content": prompt}],
         "max_tokens": 1024,
         "temperature": 0.7,
@@ -45,13 +45,12 @@ def get_groq_response(prompt):
         response = requests.post(GROQ_URL, headers=HEADERS, json=data)
         response.raise_for_status()
         result = response.json()
+
+        # Extract the raw response without unnecessary phrases
         llm_response = result['choices'][0]['message']['content']
 
-        remove_phrases = [
-            "According to the information provided,",
-            "Based on the given data,",
-            "As per the details you provided,"
-        ]
+        # Remove common AI disclaimers
+        remove_phrases = ["According to the information provided,", "Based on the given data,", "As per the details you provided,"]
         for phrase in remove_phrases:
             llm_response = llm_response.replace(phrase, "").strip()
 
@@ -64,49 +63,50 @@ def get_groq_response(prompt):
 # Streamlit UI Styling
 st.set_page_config(page_title="CampusGuideGPT", page_icon="🎓", layout="wide")
 
+# Custom CSS for styling
 st.markdown("""
-<style>
-.title {
-    font-size: 36px;
-    color: #4CAF50;
-    font-weight: bold;
-    text-align: center;
-    margin-bottom: 20px;
-}
-.sub-title {
-    font-size: 18px;
-    color: #555;
-    text-align: center;
-    margin-bottom: 20px;
-}
-.search-button {
-    display: block;
-    margin: 20px auto;
-    padding: 10px 20px;
-    background-color: #4CAF50;
-    color: white;
-    border-radius: 5px;
-    border: none;
-    font-size: 18px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-.search-button:hover {
-    background-color: #45a049;
-}
-.answer-box {
-    border: 2px solid #4CAF50;
-    border-radius: 10px;
-    padding: 15px;
-    background-color: #2F2F2F;
-    color: white;
-    margin-top: 20px;
-}
-.warning {
-    color: #e65100;
-    font-weight: bold;
-}
-</style>
+    <style>
+    .title {
+        font-size: 36px;
+        color: #4CAF50;
+        font-weight: bold;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    .sub-title {
+        font-size: 18px;
+        color: #555;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    .search-button {
+        display: block;
+        margin: 20px auto;
+        padding: 10px 20px;
+        background-color: #4CAF50;
+        color: white;
+        border-radius: 5px;
+        border: none;
+        font-size: 18px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+    .search-button:hover {
+        background-color: #45a049;
+    }
+    .answer-box {
+        border: 2px solid #4CAF50;
+        border-radius: 10px;
+        padding: 15px;
+        background-color: #2F2F2F;
+        color: white;
+        margin-top: 20px;
+    }
+    .warning {
+        color: #e65100;
+        font-weight: bold;
+    }
+    </style>
 """, unsafe_allow_html=True)
 
 # Streamlit UI Content
@@ -144,6 +144,7 @@ if st.button("Search", key="search_button", help="Click to get an answer!") or s
 
                     if response:
                         st.markdown(f'<div class="answer-box"><h3>Answer:</h3><p>{response}</p></div>', unsafe_allow_html=True)
+                        # Store query-response pair in session state
                         st.session_state["history"].append((query, response))
                     else:
                         st.markdown('<p class="warning">Could not retrieve a specific answer from Groq API. Try asking a different question.</p>', unsafe_allow_html=True)
@@ -153,6 +154,7 @@ if st.button("Search", key="search_button", help="Click to get an answer!") or s
                     response = get_groq_response(query)
                     if response:
                         st.markdown(f'<div class="answer-box"><h3>Answer:</h3><p>{response}</p></div>', unsafe_allow_html=True)
+                        # Store query-response pair in session state
                         st.session_state["history"].append((query, response))
                     else:
                         st.markdown('<p class="warning">Sorry, we couldn\'t find an answer. Please try again later.</p>', unsafe_allow_html=True)
