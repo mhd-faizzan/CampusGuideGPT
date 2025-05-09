@@ -4,3 +4,4 @@ pinecone
 pandas
 requests
 openpyxl
+openai
