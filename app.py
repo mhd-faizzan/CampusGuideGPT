@@ -18,7 +18,7 @@ pc = Pinecone(api_key=PINECONE_API_KEY)
 index = pc.Index(PINECONE_INDEX, host=PINECONE_HOST)
 
 # Load Embedding Model
-model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2', device='cpu')   # Changed
+model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')  # remove device
 
 # Groq API Setup
 GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
@@ -124,7 +124,7 @@ if query and st.session_state.get("query_input"):
 if st.button("Search", key="search_button", help="Click to get an answer!") or st.session_state.get("search_triggered"):
     if query:
         with st.spinner("Processing your query..."):
-            query_embedding = model.encode(query).tolist()
+            query_embedding = model.encode(query, device='cpu').tolist()
 
             try:
                 results = index.query(
