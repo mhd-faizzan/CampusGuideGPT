@@ -120,54 +120,7 @@ st.markdown("""
         box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2) !important;
     }
     
-    /* Response Cards */
-    .response-card {
-        background: var(--bg-secondary);
-        border: 1px solid var(--border);
-        border-radius: 1rem;
-        padding: 2rem;
-        margin: 1.5rem 0;
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-        border-left: 4px solid var(--primary);
-        animation: slideIn 0.5s ease-out;
-    }
-    
-    @keyframes slideIn {
-        from { opacity: 0; transform: translateY(20px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-    
-    .response-header {
-        display: flex;
-        align-items: center;
-        margin-bottom: 1rem;
-        gap: 0.75rem;
-    }
-    
-    .bot-avatar {
-        width: 40px;
-        height: 40px;
-        background: var(--gradient);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.2rem;
-    }
-    
-    .response-content {
-        color: var(--text-primary);
-        line-height: 1.6;
-        font-size: 1rem;
-    }
-    
-    .query-display {
-        background: var(--bg-tertiary);
-        border-radius: 0.75rem;
-        padding: 1rem;
-        margin-bottom: 1rem;
-        border-left: 3px solid var(--secondary);
-    }
+    # Response Cards - removed, using ChatGPT style now
     
     /* History Sidebar */
     .history-item {
