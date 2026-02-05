@@ -53,10 +53,8 @@ def get_groq_response(prompt):
         response.raise_for_status()
         result = response.json()
 
-        # Extract the raw response without unnecessary phrases
         llm_response = result['choices'][0]['message']['content']
 
-        # Remove common AI disclaimers
         remove_phrases = [
             "According to the information provided,", 
             "Based on the given data,", 
@@ -81,248 +79,534 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS for Enhanced UI
+# Modern Dark Theme CSS with Glassmorphism
 st.markdown("""
     <style>
-    /* Main Title Styling */
-    .title {
-        font-size: 48px;
-        color: #2E7D32;
-        font-weight: bold;
+    /* Import Google Fonts */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    
+    /* Global Styles */
+    * {
+        font-family: 'Inter', sans-serif;
+    }
+    
+    /* Main Background */
+    .stApp {
+        background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+    }
+    
+    /* Hide Streamlit Branding */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    
+    /* Title Section */
+    .hero-section {
         text-align: center;
-        margin-bottom: 10px;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        padding: 60px 20px 40px;
+        margin-bottom: 40px;
+        position: relative;
     }
     
-    .sub-title {
-        font-size: 18px;
-        color: #666;
-        text-align: center;
-        margin-bottom: 30px;
-        font-style: italic;
-    }
-    
-    /* Answer Box Styling */
-    .answer-box {
-        border-left: 5px solid #4CAF50;
-        border-radius: 8px;
-        padding: 20px;
-        background: linear-gradient(135deg, #1e3a1e 0%, #2d5a2d 100%);
-        color: white;
-        margin-top: 25px;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-    }
-    
-    .answer-box h3 {
-        color: #81C784;
-        margin-top: 0;
-        font-size: 24px;
-        border-bottom: 2px solid #4CAF50;
-        padding-bottom: 10px;
+    .main-title {
+        font-size: 72px;
+        font-weight: 700;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
         margin-bottom: 15px;
+        letter-spacing: -2px;
+        animation: fadeInUp 0.8s ease-out;
     }
     
-    .answer-box p {
-        font-size: 16px;
+    .subtitle {
+        font-size: 20px;
+        color: #a0aec0;
+        font-weight: 400;
+        margin-bottom: 0;
+        animation: fadeInUp 0.8s ease-out 0.2s both;
+    }
+    
+    .accent-line {
+        height: 3px;
+        width: 100px;
+        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        margin: 25px auto;
+        border-radius: 10px;
+        animation: fadeInUp 0.8s ease-out 0.4s both;
+    }
+    
+    /* Glassmorphism Card */
+    .glass-card {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 30px;
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        transition: all 0.3s ease;
+        animation: fadeIn 0.8s ease-out;
+    }
+    
+    .glass-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    /* Answer Box with Modern Design */
+    .answer-container {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        border: 1px solid rgba(102, 126, 234, 0.3);
+        padding: 30px;
+        margin-top: 30px;
+        box-shadow: 0 8px 32px 0 rgba(102, 126, 234, 0.2);
+        animation: slideInUp 0.5s ease-out;
+    }
+    
+    .answer-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid rgba(102, 126, 234, 0.3);
+    }
+    
+    .answer-icon {
+        font-size: 28px;
+    }
+    
+    .answer-title {
+        font-size: 24px;
+        font-weight: 600;
+        color: #e2e8f0;
+        margin: 0;
+    }
+    
+    .answer-content {
+        color: #cbd5e0;
+        font-size: 17px;
+        line-height: 1.8;
+        font-weight: 400;
+    }
+    
+    /* Source Cards */
+    .source-card {
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 15px;
+        border-left: 3px solid #667eea;
+        transition: all 0.3s ease;
+    }
+    
+    .source-card:hover {
+        background: rgba(255, 255, 255, 0.06);
+        transform: translateX(5px);
+    }
+    
+    .source-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+    }
+    
+    .source-title {
+        color: #667eea;
+        font-weight: 600;
+        font-size: 15px;
+    }
+    
+    .relevance-badge {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+    
+    .source-question {
+        color: #e2e8f0;
+        font-weight: 500;
+        margin-bottom: 8px;
+        font-size: 14px;
+    }
+    
+    .source-answer {
+        color: #a0aec0;
+        font-size: 14px;
         line-height: 1.6;
     }
     
-    /* Context Box Styling */
-    .context-box {
-        background-color: #f5f5f5;
-        border-radius: 8px;
-        padding: 15px;
-        margin-top: 20px;
-        border-left: 4px solid #2196F3;
-    }
-    
-    .context-box h4 {
-        color: #1976D2;
-        margin-top: 0;
-    }
-    
-    /* Warning/Info Messages */
-    .warning {
-        color: #ff6f00;
-        font-weight: bold;
-        padding: 15px;
-        background-color: #fff3e0;
-        border-radius: 5px;
-        border-left: 4px solid #ff6f00;
-    }
-    
-    /* History Item */
+    /* History Items */
     .history-item {
-        background-color: #fafafa;
-        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 12px;
         padding: 15px;
-        margin-bottom: 15px;
-        border-left: 3px solid #4CAF50;
+        margin-bottom: 12px;
+        border-left: 3px solid #667eea;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .history-item:hover {
+        background: rgba(255, 255, 255, 0.06);
+        transform: translateX(5px);
     }
     
     .history-question {
-        font-weight: bold;
-        color: #2E7D32;
+        color: #e2e8f0;
+        font-weight: 500;
+        font-size: 14px;
         margin-bottom: 8px;
     }
     
     .history-answer {
-        color: #424242;
-        font-size: 14px;
+        color: #718096;
+        font-size: 13px;
         line-height: 1.5;
     }
     
-    /* Button Styling */
-    .stButton > button {
-        width: 100%;
-        background: linear-gradient(90deg, #4CAF50 0%, #45a049 100%);
-        color: white;
-        font-size: 18px;
-        font-weight: bold;
-        padding: 12px 24px;
-        border-radius: 8px;
-        border: none;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    .history-time {
+        color: #4a5568;
+        font-size: 11px;
+        margin-top: 5px;
     }
     
-    .stButton > button:hover {
-        background: linear-gradient(90deg, #45a049 0%, #388E3C 100%);
-        box-shadow: 0 6px 8px rgba(0,0,0,0.15);
-        transform: translateY(-2px);
+    /* Sidebar Styling */
+    [data-testid="stSidebar"] {
+        background: linear-gradient(180deg, #0f0f1e 0%, #1a1a2e 100%);
+        border-right: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    [data-testid="stSidebar"] .element-container {
+        color: #e2e8f0;
+    }
+    
+    /* Info/Warning Boxes */
+    .stAlert {
+        background: rgba(102, 126, 234, 0.1);
+        border: 1px solid rgba(102, 126, 234, 0.3);
+        border-radius: 12px;
+        color: #cbd5e0;
     }
     
     /* Input Field Styling */
     .stTextInput > div > div > input {
-        border-radius: 8px;
-        border: 2px solid #e0e0e0;
-        padding: 12px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        border-radius: 15px;
+        color: #e2e8f0;
         font-size: 16px;
-        transition: border-color 0.3s ease;
+        padding: 18px 24px;
+        transition: all 0.3s ease;
+        font-weight: 400;
     }
     
     .stTextInput > div > div > input:focus {
-        border-color: #4CAF50;
-        box-shadow: 0 0 0 2px rgba(76,175,80,0.2);
+        background: rgba(255, 255, 255, 0.08);
+        border: 2px solid #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+        outline: none;
     }
     
-    /* Sidebar Styling */
-    .css-1d391kg {
-        background-color: #f8f9fa;
+    .stTextInput > div > div > input::placeholder {
+        color: #718096;
     }
     
-    /* Badge */
-    .badge {
-        display: inline-block;
-        padding: 4px 12px;
-        background-color: #4CAF50;
+    /* Button Styling */
+    .stButton > button {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
+        border: none;
+        border-radius: 15px;
+        padding: 18px 40px;
+        font-size: 17px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px 0 rgba(102, 126, 234, 0.4);
+        width: 100%;
+    }
+    
+    .stButton > button:hover {
+        background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px 0 rgba(102, 126, 234, 0.6);
+    }
+    
+    .stButton > button:active {
+        transform: translateY(0);
+    }
+    
+    /* Expander Styling */
+    .streamlit-expanderHeader {
+        background: rgba(255, 255, 255, 0.05);
         border-radius: 12px;
-        font-size: 12px;
-        font-weight: bold;
-        margin-left: 10px;
+        color: #e2e8f0;
+        font-weight: 500;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .streamlit-expanderHeader:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(102, 126, 234, 0.3);
+    }
+    
+    /* Metric Styling */
+    [data-testid="stMetricValue"] {
+        color: #667eea;
+        font-size: 28px;
+        font-weight: 700;
+    }
+    
+    [data-testid="stMetricLabel"] {
+        color: #a0aec0;
+        font-size: 14px;
+        font-weight: 500;
+    }
+    
+    /* Spinner */
+    .stSpinner > div {
+        border-top-color: #667eea !important;
+    }
+    
+    /* Animations */
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+    
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @keyframes slideInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+    }
+    
+    ::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.05);
+    }
+    
+    ::-webkit-scrollbar-thumb {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 10px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+    }
+    
+    /* Tag/Badge */
+    .tag {
+        display: inline-block;
+        background: rgba(102, 126, 234, 0.2);
+        color: #a0aec0;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 500;
+        margin-right: 8px;
+        margin-bottom: 8px;
+        border: 1px solid rgba(102, 126, 234, 0.3);
+    }
+    
+    /* Divider */
+    hr {
+        border: none;
+        height: 1px;
+        background: linear-gradient(90deg, transparent 0%, rgba(102, 126, 234, 0.5) 50%, transparent 100%);
+        margin: 30px 0;
+    }
+    
+    /* Footer */
+    .footer {
+        text-align: center;
+        padding: 40px 20px 20px;
+        color: #718096;
+        font-size: 14px;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        margin-top: 60px;
+    }
+    
+    .footer-gradient-text {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: 600;
+    }
+    
+    /* Status Indicators */
+    .status-online {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        background: #48bb78;
+        border-radius: 50%;
+        margin-right: 8px;
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0%, 100% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0.5;
+        }
     }
     </style>
 """, unsafe_allow_html=True)
 
-# Main Content
-col1, col2, col3 = st.columns([1, 3, 1])
-with col2:
-    st.markdown('<h1 class="title">🎓 CampusGuideGPT</h1>', unsafe_allow_html=True)
-    st.markdown('<p class="sub-title">Your intelligent assistant for Hochschule Harz and German university information</p>', unsafe_allow_html=True)
+# Hero Section
+st.markdown("""
+    <div class="hero-section">
+        <h1 class="main-title">CampusGuideGPT</h1>
+        <div class="accent-line"></div>
+        <p class="subtitle">Your intelligent AI assistant for Hochschule Harz & German university insights</p>
+    </div>
+""", unsafe_allow_html=True)
 
-# Sidebar for History and Info
+# Sidebar
 with st.sidebar:
-    st.markdown("### 📚 About")
-    st.info("CampusGuideGPT uses AI to answer your questions about Hochschule Harz and German universities. Ask anything about admissions, programs, campus life, and more!")
-    
-    st.markdown("### 🔍 Tips for Better Results")
+    st.markdown("### 🎯 About CampusGuideGPT")
     st.markdown("""
-    - Be specific in your questions
-    - Ask one question at a time
-    - Use clear language
-    - Include relevant details
-    """)
+    <div style='color: #a0aec0; font-size: 14px; line-height: 1.6;'>
+    Your AI-powered companion for navigating German university applications, campus life, and academic programs. 
+    Powered by advanced language models and semantic search.
+    </div>
+    """, unsafe_allow_html=True)
     
-    # Display Search History
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    st.markdown("### 💡 Pro Tips")
+    st.markdown("""
+    <div style='font-size: 14px;'>
+        <span class='tag'>Be specific</span>
+        <span class='tag'>One question</span>
+        <span class='tag'>Clear context</span>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    # Stats
     if st.session_state["history"]:
-        st.markdown("### 📜 Recent Searches")
-        st.markdown(f'<span class="badge">{len(st.session_state["history"])} queries</span>', unsafe_allow_html=True)
+        col1, col2 = st.columns(2)
+        with col1:
+            st.metric("Total Queries", len(st.session_state["history"]))
+        with col2:
+            st.metric("Session", "Active", delta="🟢")
+    
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    # History Section
+    if st.session_state["history"]:
+        st.markdown("### 📚 Recent History")
         
-        with st.expander("View History", expanded=False):
-            for i, (q, a) in enumerate(reversed(st.session_state["history"][-5:])):  # Show last 5
-                st.markdown(f'<div class="history-item">', unsafe_allow_html=True)
-                st.markdown(f'<div class="history-question">Q{len(st.session_state["history"])-i}: {q[:60]}{"..." if len(q) > 60 else ""}</div>', unsafe_allow_html=True)
-                st.markdown(f'<div class="history-answer">{a[:100]}{"..." if len(a) > 100 else ""}</div>', unsafe_allow_html=True)
-                st.markdown('</div>', unsafe_allow_html=True)
+        with st.expander("View Past Queries", expanded=False):
+            for i, (q, a) in enumerate(reversed(st.session_state["history"][-5:])):
+                st.markdown(f"""
+                <div class="history-item">
+                    <div class="history-question">🔹 {q[:70]}{"..." if len(q) > 70 else ""}</div>
+                    <div class="history-answer">{a[:120]}{"..." if len(a) > 120 else ""}</div>
+                </div>
+                """, unsafe_allow_html=True)
         
-        if st.button("🗑️ Clear History"):
+        st.markdown("<br>", unsafe_allow_html=True)
+        
+        if st.button("🗑️ Clear All History", use_container_width=True):
             st.session_state["history"] = []
             st.rerun()
 
-# Main Query Interface
-query = st.text_input(
-    "💬 Ask your question:", 
-    placeholder="E.g., How do I apply for a Master's program at Hochschule Harz?", 
-    key="query_input",
-    label_visibility="collapsed"
-)
+# Main Content Area
+col_left, col_center, col_right = st.columns([0.5, 6, 0.5])
 
-# Two-column layout for button and status
-col_btn, col_status = st.columns([3, 1])
-
-with col_btn:
-    search_clicked = st.button("🔍 Search", key="search_button", help="Click to get an answer!", use_container_width=True)
-
-with col_status:
-    if st.session_state["history"]:
-        st.metric("Queries", len(st.session_state["history"]))
+with col_center:
+    # Query Input
+    query = st.text_input(
+        "Ask your question", 
+        placeholder="What are the admission requirements for Master's programs?", 
+        key="query_input",
+        label_visibility="collapsed"
+    )
+    
+    # Search Button
+    search_clicked = st.button("🔍 Search Knowledge Base", key="search_button", use_container_width=True)
 
 # Process Query
 if search_clicked or st.session_state.get("search_triggered"):
-    st.session_state["search_triggered"] = False  # Reset trigger
+    st.session_state["search_triggered"] = False
     
     if query:
-        with st.spinner("🤔 Processing your query..."):
-            try:
-                # Generate embedding and ensure it's a flat list
-                query_embedding = model.encode(query, convert_to_numpy=True)
-                
-                # Convert to flat list if it's a numpy array
-                if isinstance(query_embedding, np.ndarray):
-                    query_embedding = query_embedding.flatten().tolist()
-                
-                # Debug info (can be removed in production)
-                # st.write(f"Debug - Embedding type: {type(query_embedding)}, Length: {len(query_embedding)}")
-                
-                # Query Pinecone with proper parameters
-                results = index.query(
-                    vector=query_embedding,  # Changed from query() parameters
-                    top_k=3,
-                    include_metadata=True,
-                    namespace="ns1"
-                )
-
-                if results and hasattr(results, 'matches') and results.matches:
-                    # Build context from matches
-                    context = ""
-                    sources = []
+        with col_center:
+            with st.spinner("🧠 Analyzing your question..."):
+                try:
+                    # Generate embedding
+                    query_embedding = model.encode(query, convert_to_numpy=True)
                     
-                    for idx, match in enumerate(results.matches, 1):
-                        metadata = match.get('metadata', {})
-                        question = metadata.get('question', 'N/A')
-                        answer = metadata.get('answer', 'N/A')
-                        score = match.get('score', 0)
-                        
-                        context += f"Source {idx}:\nQ: {question}\nA: {answer}\n\n"
-                        sources.append({
-                            'question': question,
-                            'answer': answer,
-                            'score': score
-                        })
+                    if isinstance(query_embedding, np.ndarray):
+                        query_embedding = query_embedding.flatten().tolist()
+                    
+                    # Query Pinecone
+                    results = index.query(
+                        vector=query_embedding,
+                        top_k=3,
+                        include_metadata=True,
+                        namespace="ns1"
+                    )
 
-                    # Create prompt for Groq
-                    prompt = f"""Based on the following context from Hochschule Harz documentation, answer the user's question naturally and conversationally.
+                    if results and hasattr(results, 'matches') and results.matches:
+                        # Build context
+                        context = ""
+                        sources = []
+                        
+                        for idx, match in enumerate(results.matches, 1):
+                            metadata = match.get('metadata', {})
+                            question = metadata.get('question', 'N/A')
+                            answer = metadata.get('answer', 'N/A')
+                            score = match.get('score', 0)
+                            
+                            context += f"Source {idx}:\nQ: {question}\nA: {answer}\n\n"
+                            sources.append({
+                                'question': question,
+                                'answer': answer,
+                                'score': score
+                            })
+
+                        # Create prompt
+                        prompt = f"""Based on the following context from Hochschule Harz documentation, answer the user's question naturally and conversationally.
 
 Context:
 {context}
@@ -336,70 +620,91 @@ Instructions:
 - Use a friendly, helpful tone
 
 Answer:"""
-                    
-                    # Get response from Groq
-                    response = get_groq_response(prompt)
+                        
+                        response = get_groq_response(prompt)
 
-                    if response:
-                        # Display answer
-                        st.markdown(f'<div class="answer-box"><h3>✨ Answer</h3><p>{response}</p></div>', unsafe_allow_html=True)
-                        
-                        # Store in history
-                        st.session_state["history"].append((query, response))
-                        
-                        # Show sources in expander
-                        with st.expander("📖 View Sources", expanded=False):
-                            for idx, source in enumerate(sources, 1):
-                                st.markdown(f"**Source {idx}** (Relevance: {source['score']:.2%})")
-                                st.markdown(f"**Q:** {source['question']}")
-                                st.markdown(f"**A:** {source['answer']}")
-                                st.divider()
+                        if response:
+                            # Display answer with modern styling
+                            st.markdown(f"""
+                            <div class="answer-container">
+                                <div class="answer-header">
+                                    <span class="answer-icon">✨</span>
+                                    <h3 class="answer-title">Answer</h3>
+                                </div>
+                                <div class="answer-content">{response}</div>
+                            </div>
+                            """, unsafe_allow_html=True)
+                            
+                            st.session_state["history"].append((query, response))
+                            
+                            # Sources in expander
+                            with st.expander("📖 View Sources & References", expanded=False):
+                                for idx, source in enumerate(sources, 1):
+                                    relevance_pct = int(source['score'] * 100)
+                                    st.markdown(f"""
+                                    <div class="source-card">
+                                        <div class="source-header">
+                                            <span class="source-title">Source {idx}</span>
+                                            <span class="relevance-badge">{relevance_pct}% Match</span>
+                                        </div>
+                                        <div class="source-question"><strong>Q:</strong> {source['question']}</div>
+                                        <div class="source-answer"><strong>A:</strong> {source['answer']}</div>
+                                    </div>
+                                    """, unsafe_allow_html=True)
+                        else:
+                            st.error("🔴 Could not retrieve a response. Please try again.")
+
                     else:
-                        st.error("Could not retrieve a response from the AI. Please try again.")
-
-                else:
-                    # Fallback to general knowledge
-                    st.warning("⚠️ No specific information found in the database. Using general knowledge...")
-                    
-                    fallback_prompt = f"""Answer the following question about German universities or Hochschule Harz based on your general knowledge:
+                        # Fallback
+                        st.warning("⚠️ No specific information found. Using general knowledge...")
+                        
+                        fallback_prompt = f"""Answer the following question about German universities or Hochschule Harz based on your general knowledge:
 
 Question: {query}
 
 Provide a helpful answer, but mention that this is general information and the user should verify with official sources."""
-                    
-                    response = get_groq_response(fallback_prompt)
-                    
-                    if response:
-                        st.markdown(f'<div class="answer-box"><h3>💡 General Information</h3><p>{response}</p></div>', unsafe_allow_html=True)
-                        st.info("ℹ️ This answer is based on general knowledge. For official information, please check the Hochschule Harz website.")
                         
-                        # Store in history
-                        st.session_state["history"].append((query, response))
-                    else:
-                        st.error("Sorry, we couldn't find an answer. Please try again later.")
+                        response = get_groq_response(fallback_prompt)
+                        
+                        if response:
+                            st.markdown(f"""
+                            <div class="answer-container">
+                                <div class="answer-header">
+                                    <span class="answer-icon">💡</span>
+                                    <h3 class="answer-title">General Information</h3>
+                                </div>
+                                <div class="answer-content">{response}</div>
+                            </div>
+                            """, unsafe_allow_html=True)
+                            
+                            st.info("ℹ️ This answer is based on general knowledge. Please verify with official sources.")
+                            st.session_state["history"].append((query, response))
+                        else:
+                            st.error("❌ Sorry, couldn't find an answer. Please try again.")
 
-            except Exception as e:
-                st.error(f"❌ An error occurred: {str(e)}")
-                st.code(f"Error details: {type(e).__name__}: {str(e)}")
-                
-                # Debug information
-                with st.expander("🔧 Debug Information"):
-                    st.write("If this error persists, please check:")
-                    st.write("1. Pinecone index configuration")
-                    st.write("2. API keys are valid")
-                    st.write("3. Network connection")
-                    st.write(f"4. Query embedding shape: {len(query_embedding) if 'query_embedding' in locals() else 'Not generated'}")
+                except Exception as e:
+                    st.error(f"❌ An error occurred: {str(e)}")
+                    
+                    with st.expander("🔧 Technical Details"):
+                        st.code(f"{type(e).__name__}: {str(e)}")
+                        st.markdown("""
+                        **Troubleshooting:**
+                        - Check Pinecone index configuration
+                        - Verify API keys are valid
+                        - Ensure network connectivity
+                        """)
     else:
-        st.warning("⚠️ Please enter a question to search.")
+        with col_center:
+            st.warning("⚠️ Please enter a question to search.")
 
 # Footer
-st.markdown("---")
-st.markdown(
-    """
-    <div style='text-align: center; color: #666; font-size: 14px;'>
-        <p>Powered by Llama 3.3, Pinecone & Sentence Transformers 🚀</p>
-        <p>Made with ❤️ for Hochschule Harz students</p>
+st.markdown("""
+<div class="footer">
+    <div style="margin-bottom: 15px;">
+        <span class="status-online"></span>
+        <span class="footer-gradient-text">System Online</span>
     </div>
-    """, 
-    unsafe_allow_html=True
-)
+    <p>Powered by <strong>Llama 3.3</strong> • <strong>Pinecone Vector DB</strong> • <strong>Sentence Transformers</strong></p>
+    <p style="font-size: 12px; margin-top: 10px;">Built with ❤️ for Hochschule Harz • © 2024</p>
+</div>
+""", unsafe_allow_html=True)
