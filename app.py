@@ -22,7 +22,7 @@ st.set_page_config(
 st.markdown(load_css(), unsafe_allow_html=True)
 
 # init services
-cfg = load_config()
+cfg     = load_config()
 vectors = VectorService(cfg["pinecone_api_key"], cfg["pinecone_index"], cfg["pinecone_host"])
 llm     = LLMService(api_key=cfg["groq_api_key"])
 
@@ -33,41 +33,28 @@ if "messages" not in st.session_state:
 # sidebar
 render_sidebar()
 
-# header
-st.markdown("""
-<div style="text-align:center; padding:48px 0 8px;">
-    <div style="font-size:13px; font-weight:600; color:#8a8a8a;
-                letter-spacing:1.4px; text-transform:uppercase; margin-bottom:10px;">
-        Hochschule Harz
-    </div>
-    <div style="font-size:28px; font-weight:600; color:#ececec; letter-spacing:-0.5px;">
-        CampusGuideGPT
-    </div>
-</div>
-""", unsafe_allow_html=True)
-
-# show welcome message if no history
+# show header + subtitle only when no messages
 if not st.session_state.messages:
     st.markdown("""
-    <div style="text-align:center; padding:32px 0 24px;">
-        <div style="font-size:16px; color:#8a8a8a; font-weight:400;">
+    <div style="text-align:center; padding:80px 0 16px;">
+        <div style="font-size:12px; font-weight:600; color:#6a6a6a;
+                    letter-spacing:1.4px; text-transform:uppercase; margin-bottom:10px;">
+            Hochschule Harz
+        </div>
+        <div style="font-size:26px; font-weight:600; color:#ececec; letter-spacing:-0.5px;">
+            CampusGuideGPT
+        </div>
+        <div style="font-size:15px; color:#6a6a6a; margin-top:14px; font-weight:400;">
             Ask me anything about campus life, admissions, or programs.
         </div>
     </div>
-    <div style="display:flex; flex-wrap:wrap; gap:10px; justify-content:center;
-                padding:0 0 32px;">
-        <div class="suggestion-chip">Admission requirements</div>
-        <div class="suggestion-chip">Tuition fees</div>
-        <div class="suggestion-chip">Student visa process</div>
-        <div class="suggestion-chip">Semester dates 2025</div>
-    </div>
     """, unsafe_allow_html=True)
 
-# render chat history
+# render conversation history
 for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
-        if msg["role"] == "assistant" and "sources" in msg:
+        if msg["role"] == "assistant" and "sources" in msg and msg["sources"]:
             with st.expander("Sources", expanded=False):
                 for i, src in enumerate(msg["sources"], 1):
                     pct = int(src["score"] * 100)
@@ -83,14 +70,19 @@ for msg in st.session_state.messages:
                     </div>
                     """, unsafe_allow_html=True)
 
-# chat input
+# copyright
+st.markdown("""
+<div style="text-align:center; padding:24px 0 8px; color:#4a4a4a; font-size:11px;">
+    © 2024 CampusGuideGPT · Hochschule Harz · All rights reserved
+</div>
+""", unsafe_allow_html=True)
+
+# chat input — always at bottom
 if query := st.chat_input("Ask anything about Hochschule Harz..."):
-    # show user message
     st.session_state.messages.append({"role": "user", "content": query})
     with st.chat_message("user"):
         st.markdown(query)
 
-    # get answer
     with st.chat_message("assistant"):
         with st.spinner(""):
             hits   = vectors.search(encode(query))
