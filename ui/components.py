@@ -1,20 +1,45 @@
 import streamlit as st
 
+# user bubble — right aligned dark pill
+def _user_bubble(text: str):
+    st.markdown(f"""
+    <div style="display:flex; justify-content:flex-end; margin:16px 0 4px;">
+        <div style="background:#2f2f2f; color:#ececec; font-size:15px;
+                    line-height:1.6; padding:12px 18px; border-radius:18px 18px 4px 18px;
+                    max-width:75%;">
+            {text}
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+# assistant bubble — left aligned, no background
+def _assistant_bubble(text: str):
+    st.markdown(f"""
+    <div style="display:flex; align-items:flex-start; gap:12px; margin:16px 0 4px;">
+        <div style="width:28px; height:28px; border-radius:50%; background:#2f2f2f;
+                    border:1px solid #3a3a3a; flex-shrink:0; display:flex;
+                    align-items:center; justify-content:center; font-size:13px;
+                    color:#ececec; font-weight:500; margin-top:2px;">C</div>
+        <div style="color:#ececec; font-size:15px; line-height:1.75; max-width:80%; padding-top:4px;">
+            {text}
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
 def render_hero():
     st.markdown("""
-    <div style="text-align:center; padding: 80px 0 32px;">
-        <h2 style="font-size:22px; font-weight:400; color:#ececec; margin:0; letter-spacing:-0.2px;">
+    <div style="text-align:center; padding:80px 0 40px;">
+        <div style="font-size:22px; font-weight:400; color:#ececec; letter-spacing:-0.2px;">
             Ready when you are.
-        </h2>
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
 def render_answer(response: str, source_count: int = 0, latency_ms: int = 0):
-    st.markdown(f"""
-    <div style="margin-top:24px; font-size:15px; color:#ececec; line-height:1.75;">
-        {response}
-    </div>
-    """, unsafe_allow_html=True)
+    _assistant_bubble(response)
+
+def render_question(question: str):
+    _user_bubble(question)
 
 def render_sources(sources: list[dict]):
     if not sources:
@@ -24,7 +49,7 @@ def render_sources(sources: list[dict]):
             pct = int(src["score"] * 100)
             preview = src["answer"][:160] + "..." if len(src["answer"]) > 160 else src["answer"]
             st.markdown(f"""
-            <div style="background:#2f2f2f; border:1px solid #3a3a3a; border-radius:12px;
+            <div style="background:#2a2a2a; border:1px solid #3a3a3a; border-radius:12px;
                         padding:14px 16px; margin-bottom:8px;">
                 <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
                     <span style="font-size:11px; color:#6a6a6a; font-weight:500;">SOURCE {i:02d}</span>
@@ -57,10 +82,9 @@ def render_sidebar(history: list[tuple]):
                         letter-spacing:0.8px; text-transform:uppercase;">Recent</div>
             """, unsafe_allow_html=True)
             for q, _ in reversed(history[-6:]):
-                truncated = q[:50] + "..." if len(q) > 50 else q
+                truncated = q[:48] + "..." if len(q) > 48 else q
                 st.markdown(f"""
-                <div style="padding:8px 10px; border-radius:8px; margin-bottom:2px;
-                            cursor:pointer;">
+                <div style="padding:8px 10px; border-radius:8px; margin-bottom:2px;">
                     <div style="font-size:13px; color:#8a8a8a; white-space:nowrap;
                                 overflow:hidden; text-overflow:ellipsis;">{truncated}</div>
                 </div>
@@ -73,8 +97,8 @@ def render_sidebar(history: list[tuple]):
 
 def render_footer():
     st.markdown("""
-    <div style="text-align:center; padding:32px 0 16px; color:#4a4a4a;
-                font-size:11px; border-top:1px solid #2a2a2a; margin-top:40px;">
-        CampusGuideGPT &nbsp;·&nbsp; Hochschule Harz &nbsp;·&nbsp; 2024
+    <div style="text-align:center; padding:24px 0 12px; color:#4a4a4a;
+                font-size:11px; border-top:1px solid #2a2a2a; margin-top:32px;">
+        CampusGuideGPT · Hochschule Harz · 2024
     </div>
     """, unsafe_allow_html=True)
