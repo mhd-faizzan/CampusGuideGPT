@@ -6,7 +6,7 @@ def load_css() -> str:
     * { font-family: 'Inter', system-ui, sans-serif; box-sizing: border-box; }
     #MainMenu, footer, header { visibility: hidden; }
 
-    /* background */
+    /* page */
     .stApp { background: #212121 !important; }
 
     /* sidebar */
@@ -15,41 +15,44 @@ def load_css() -> str:
         border-right: 1px solid #2a2a2a !important;
     }
 
-    /* input — pill shaped */
+    /* hide default streamlit input label gap */
+    .stTextInput > label { display: none; }
+
+    /* input pill */
     .stTextInput > div > div > input {
         background: #2f2f2f !important;
-        border: 1px solid #2f2f2f !important;
+        border: 1px solid #3a3a3a !important;
         border-radius: 28px !important;
         color: #ececec !important;
         font-size: 15px !important;
         padding: 14px 20px !important;
+        transition: border-color 0.2s;
     }
     .stTextInput > div > div > input:focus {
-        border-color: #4a4a4a !important;
+        border-color: #565656 !important;
         box-shadow: none !important;
         outline: none !important;
     }
     .stTextInput > div > div > input::placeholder { color: #8a8a8a !important; }
 
-    /* button */
+    /* send button */
     .stButton > button {
-        background: #2f2f2f !important;
-        color: #ececec !important;
-        border: 1px solid #3a3a3a !important;
-        border-radius: 28px !important;
-        font-size: 14px !important;
-        font-weight: 500 !important;
-        padding: 12px 24px !important;
-        width: 100%;
+        background: #ececec !important;
+        color: #212121 !important;
+        border: none !important;
+        border-radius: 50% !important;
+        width: 40px !important;
+        height: 40px !important;
+        font-size: 18px !important;
+        font-weight: 600 !important;
+        padding: 0 !important;
         box-shadow: none !important;
         transition: background 0.15s !important;
+        min-height: unset !important;
     }
-    .stButton > button:hover {
-        background: #3a3a3a !important;
-        border-color: #4a4a4a !important;
-    }
+    .stButton > button:hover { background: #d0d0d0 !important; }
 
-    /* expander */
+    /* expander for sources */
     .streamlit-expanderHeader {
         background: #2f2f2f !important;
         border: 1px solid #3a3a3a !important;
@@ -59,7 +62,7 @@ def load_css() -> str:
     }
 
     /* spinner */
-    .stSpinner > div { border-top-color: #676767 !important; }
+    .stSpinner > div { border-top-color: #8a8a8a !important; }
 
     /* alerts */
     .stAlert {
@@ -67,6 +70,7 @@ def load_css() -> str:
         border: 1px solid #3a3a3a !important;
         border-radius: 12px !important;
         color: #8a8a8a !important;
+        font-size: 13px !important;
     }
 
     /* scrollbar */
