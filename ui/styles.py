@@ -6,20 +6,17 @@ def load_css() -> str:
     * { font-family: 'Inter', system-ui, sans-serif; box-sizing: border-box; }
     #MainMenu, footer, header { visibility: hidden; }
 
-    /* page background */
     .stApp { background: #212121 !important; }
 
-    /* sidebar */
     [data-testid="stSidebar"] {
         background: #171717 !important;
         border-right: 1px solid #2a2a2a !important;
     }
     [data-testid="stSidebar"] > div { padding-top: 16px; }
 
-    /* new chat button */
     .stButton > button {
         background: transparent !important;
-        color: #ececec !important;
+        color: #8a8a8a !important;
         border: 1px solid #3a3a3a !important;
         border-radius: 8px !important;
         font-size: 13px !important;
@@ -34,19 +31,12 @@ def load_css() -> str:
         border-color: #4a4a4a !important;
     }
 
-    /* chat messages */
     [data-testid="stChatMessage"] {
         background: transparent !important;
         border: none !important;
         padding: 8px 0 !important;
     }
 
-    /* user message bubble */
-    [data-testid="stChatMessage"][data-testid*="user"] {
-        flex-direction: row-reverse !important;
-    }
-
-    /* chat input */
     [data-testid="stChatInput"] {
         background: #2f2f2f !important;
         border: 1px solid #3a3a3a !important;
@@ -60,23 +50,30 @@ def load_css() -> str:
     }
     [data-testid="stChatInput"] textarea::placeholder { color: #8a8a8a !important; }
     [data-testid="stChatInput"] button {
-        background: #ececec !important;
+        background: #3a3a3a !important;
         border-radius: 8px !important;
-        color: #212121 !important;
+        color: #8a8a8a !important;
     }
-    [data-testid="stChatInput"] button:hover { background: #d0d0d0 !important; }
+    [data-testid="stChatInput"] button:hover { background: #4a4a4a !important; }
 
-    /* assistant message text */
     [data-testid="stChatMessage"] p {
         color: #ececec !important;
         font-size: 15px !important;
         line-height: 1.75 !important;
     }
 
-    /* spinner */
+    /* vertically center the whole page content */
+    .main .block-container {
+        min-height: 80vh !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        padding-top: 2rem !important;
+        padding-bottom: 2rem !important;
+    }
+
     .stSpinner > div { border-top-color: #8a8a8a !important; }
 
-    /* expander */
     .streamlit-expanderHeader {
         background: #2a2a2a !important;
         border: 1px solid #3a3a3a !important;
@@ -85,7 +82,6 @@ def load_css() -> str:
         font-size: 12px !important;
     }
 
-    /* alerts */
     .stAlert {
         background: #2f2f2f !important;
         border: 1px solid #3a3a3a !important;
@@ -93,7 +89,6 @@ def load_css() -> str:
         color: #8a8a8a !important;
     }
 
-    /* source card */
     .source-card {
         background: #2a2a2a;
         border: 1px solid #3a3a3a;
@@ -109,19 +104,6 @@ def load_css() -> str:
         border-radius: 10px;
     }
 
-    /* suggestion chips */
-    .suggestion-chip {
-        display: inline-block;
-        background: #2f2f2f;
-        border: 1px solid #3a3a3a;
-        color: #8a8a8a;
-        font-size: 13px;
-        padding: 8px 16px;
-        border-radius: 20px;
-        cursor: pointer;
-    }
-
-    /* scrollbar */
     ::-webkit-scrollbar { width: 4px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: #3a3a3a; border-radius: 4px; }
