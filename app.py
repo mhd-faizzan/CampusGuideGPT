@@ -6,8 +6,8 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import streamlit as st
 
 from config.settings import load_config
-from services.embedding_service import encode
-from services.vector_service import VectorService
+from services.embedding import encode
+from services.vector_db import VectorService
 from services.llm_service import LLMService
 from utils.prompt_builder import build_prompt
 from ui.styles import load_css
