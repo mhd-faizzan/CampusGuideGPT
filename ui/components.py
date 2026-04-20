@@ -2,117 +2,79 @@ import streamlit as st
 
 def render_hero():
     st.markdown("""
-    <div class="hero-section">
-        <div class="hero-eyebrow">Hochschule Harz assistant</div>
-        <div class="hero-title">Ask anything about <span>campus life</span></div>
-        <div class="hero-sub">
-            Powered by semantic search across official university documentation
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-def render_chips():
-    """Suggestion chips below the search bar."""
-    st.markdown("""
-    <div class="chip-row">
-        <span class="chip">Admission requirements</span>
-        <span class="chip">Tuition fees</span>
-        <span class="chip">Student visa</span>
-        <span class="chip">Semester dates</span>
-        <span class="chip">Housing options</span>
+    <div style="text-align:center; padding: 80px 0 32px;">
+        <h2 style="font-size:22px; font-weight:400; color:#ececec; margin:0; letter-spacing:-0.2px;">
+            Ready when you are.
+        </h2>
     </div>
     """, unsafe_allow_html=True)
 
 def render_answer(response: str, source_count: int = 0, latency_ms: int = 0):
-    meta = f"{source_count} sources · {latency_ms}ms" if source_count else ""
     st.markdown(f"""
-    <div class="answer-card">
-        <div class="answer-header">
-            <div class="answer-orb"><div class="answer-orb-inner"></div></div>
-            <div>
-                <div class="answer-label">Answer</div>
-                <div class="answer-meta">{meta}</div>
-            </div>
-        </div>
-        <div class="answer-body">
-            <div class="answer-text">{response}</div>
-        </div>
+    <div style="margin-top:24px; font-size:15px; color:#ececec; line-height:1.75;">
+        {response}
     </div>
     """, unsafe_allow_html=True)
 
 def render_sources(sources: list[dict]):
     if not sources:
         return
-    with st.expander("View sources", expanded=False):
+    with st.expander("Sources", expanded=False):
         for i, src in enumerate(sources, 1):
             pct = int(src["score"] * 100)
+            preview = src["answer"][:160] + "..." if len(src["answer"]) > 160 else src["answer"]
             st.markdown(f"""
-            <div class="source-card">
-                <div class="source-top">
-                    <span class="source-num">Source {i:02d}</span>
-                    <span class="source-score">{pct}%</span>
+            <div style="background:#2f2f2f; border:1px solid #3a3a3a; border-radius:12px;
+                        padding:14px 16px; margin-bottom:8px;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                    <span style="font-size:11px; color:#6a6a6a; font-weight:500;">SOURCE {i:02d}</span>
+                    <span style="font-size:11px; background:#3a3a3a; color:#8a8a8a;
+                                 padding:2px 8px; border-radius:10px;">{pct}%</span>
                 </div>
-                <div class="source-question">{src['question']}</div>
-                <div class="source-answer">{src['answer'][:160]}...</div>
+                <div style="font-size:13px; color:#ececec; margin-bottom:4px;">{src['question']}</div>
+                <div style="font-size:12px; color:#6a6a6a;">{preview}</div>
             </div>
             """, unsafe_allow_html=True)
 
 def render_sidebar(history: list[tuple]):
     with st.sidebar:
         st.markdown("""
-        <div style="display:flex;align-items:center;gap:10px;
-                    margin-bottom:24px;padding-bottom:16px;
-                    border-bottom:1px solid #1a1a28">
-            <div style="width:32px;height:32px;border-radius:8px;
-                        background:#1a1a35;border:1px solid #2a2a4a;
-                        display:flex;align-items:center;justify-content:center">
-                <div style="width:16px;height:8px;border-radius:8px 8px 0 0;
-                             background:#6366f1"></div>
-            </div>
-            <div>
-                <div style="font-size:13px;font-weight:600;color:#e2e8f0">
-                    CampusGuide
-                </div>
-                <div style="font-size:10px;color:#4a5068">Hochschule Harz AI</div>
-            </div>
+        <div style="padding:4px 0 20px; border-bottom:1px solid #2a2a2a; margin-bottom:20px;">
+            <div style="font-size:15px; font-weight:500; color:#ececec;">CampusGuideGPT</div>
+            <div style="font-size:12px; color:#6a6a6a; margin-top:3px;">Hochschule Harz</div>
         </div>
-        <div style="font-size:10px;font-weight:600;color:#3a3a55;
-                    letter-spacing:1.2px;text-transform:uppercase;margin-bottom:8px">
-            Status
+        <div style="font-size:11px; color:#6a6a6a; margin-bottom:6px;
+                    letter-spacing:0.8px; text-transform:uppercase;">Status</div>
+        <div style="display:flex; align-items:center; gap:6px; margin-bottom:20px;">
+            <div style="width:7px; height:7px; border-radius:50%; background:#4ade80;"></div>
+            <span style="font-size:12px; color:#8a8a8a;">Online</span>
         </div>
-        <span class="badge badge-indigo">Llama 3.3 · 70B</span>&nbsp;
-        <span class="badge badge-green">Online</span>
         """, unsafe_allow_html=True)
 
         if history:
             st.markdown("""
-            <div style="font-size:10px;font-weight:600;color:#3a3a55;
-                        letter-spacing:1.2px;text-transform:uppercase;
-                        margin:20px 0 8px">Recent</div>
+            <div style="font-size:11px; color:#6a6a6a; margin-bottom:8px;
+                        letter-spacing:0.8px; text-transform:uppercase;">Recent</div>
             """, unsafe_allow_html=True)
-            for q, _ in reversed(history[-5:]):
+            for q, _ in reversed(history[-6:]):
+                truncated = q[:50] + "..." if len(q) > 50 else q
                 st.markdown(f"""
-                <div class="history-item">
-                    <div class="history-q">{q[:55]}{"..." if len(q)>55 else ""}</div>
+                <div style="padding:8px 10px; border-radius:8px; margin-bottom:2px;
+                            cursor:pointer;">
+                    <div style="font-size:13px; color:#8a8a8a; white-space:nowrap;
+                                overflow:hidden; text-overflow:ellipsis;">{truncated}</div>
                 </div>
                 """, unsafe_allow_html=True)
+
+            st.markdown("<br>", unsafe_allow_html=True)
             if st.button("Clear history", use_container_width=True):
                 st.session_state.history = []
                 st.rerun()
 
-def render_stats(query_count: int):
-    c1, c2, c3, c4 = st.columns(4)
-    c1.metric("Documents", "847")
-    c2.metric("Queries today", query_count)
-    c3.metric("Avg latency", "94ms")
-    c4.metric("Uptime", "99%")
-
 def render_footer():
     st.markdown("""
-    <div class="app-footer">
-        CampusGuideGPT · Hochschule Harz · 2024<br>
-        <span class="footer-pill">all-MiniLM-L6-v2</span>
-        <span class="footer-pill">Pinecone ns1</span>
-        <span class="footer-pill">Groq API</span>
+    <div style="text-align:center; padding:32px 0 16px; color:#4a4a4a;
+                font-size:11px; border-top:1px solid #2a2a2a; margin-top:40px;">
+        CampusGuideGPT &nbsp;·&nbsp; Hochschule Harz &nbsp;·&nbsp; 2024
     </div>
     """, unsafe_allow_html=True)
