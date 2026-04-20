@@ -1,13 +1,12 @@
 import streamlit as st
-import numpy as np
 from sentence_transformers import SentenceTransformer
-from config.settings import EMBED_MODEL
+
+EMBED_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 
 @st.cache_resource
-def load_embedding_model() -> SentenceTransformer:
+def _load_model():
     return SentenceTransformer(EMBED_MODEL)
 
 def encode(text: str) -> list[float]:
-    model = load_embedding_model()
-    vec = model.encode(text, convert_to_numpy=True)
-    return vec.flatten().tolist()
+    vector = _load_model().encode(text, convert_to_numpy=True)
+    return vector.flatten().tolist()
