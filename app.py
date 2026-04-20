@@ -17,7 +17,6 @@ from ui.components import (
     render_sources,
     render_sidebar,
     render_footer,
-    render_error,
 )
 
 # page config
@@ -60,7 +59,7 @@ if st.button("Ask", use_container_width=True) and query:
         render_sources(hits)
         st.session_state.history.append((query, answer))
     else:
-        render_error("Could not get a response. Please check your API keys.")
+        st.error("Could not get a response. Please check your API keys.")
 
 elif st.session_state.history:
     # show last answer on rerun
