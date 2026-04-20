@@ -10,7 +10,7 @@ from services.vector_db import VectorService
 from services.llm_service import LLMService
 from utils.prompt_builder import build_prompt
 from ui.styles import load_css
-from ui.components import render_sidebar
+from ui.components import render_sidebar, stream_response
 
 # page config
 st.set_page_config(
@@ -33,28 +33,31 @@ if "messages" not in st.session_state:
 # sidebar
 render_sidebar()
 
-# show header + subtitle only when no messages
+# empty state — centered hero
 if not st.session_state.messages:
     st.markdown("""
-    <div style="text-align:center; padding:80px 0 16px;">
-        <div style="font-size:12px; font-weight:600; color:#6a6a6a;
-                    letter-spacing:1.4px; text-transform:uppercase; margin-bottom:10px;">
+    <div style="min-height:60vh; display:flex; flex-direction:column;
+                align-items:center; justify-content:center; text-align:center;
+                padding:40px 20px;">
+        <div style="font-size:11px; font-weight:600; color:#6e6e6e;
+                    letter-spacing:1.6px; text-transform:uppercase; margin-bottom:12px;">
             Hochschule Harz
         </div>
-        <div style="font-size:26px; font-weight:600; color:#ececec; letter-spacing:-0.5px;">
+        <div style="font-size:28px; font-weight:600; color:#e0e0e0;
+                    letter-spacing:-0.5px; margin-bottom:14px;">
             CampusGuideGPT
         </div>
-        <div style="font-size:15px; color:#6a6a6a; margin-top:14px; font-weight:400;">
+        <div style="font-size:15px; color:#6e6e6e; max-width:420px; line-height:1.6;">
             Ask me anything about campus life, admissions, or programs.
         </div>
     </div>
     """, unsafe_allow_html=True)
 
-# render conversation history
+# render existing messages
 for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
-        if msg["role"] == "assistant" and "sources" in msg and msg["sources"]:
+        if msg["role"] == "assistant" and msg.get("sources"):
             with st.expander("Sources", expanded=False):
                 for i, src in enumerate(msg["sources"], 1):
                     pct = int(src["score"] * 100)
@@ -62,34 +65,43 @@ for msg in st.session_state.messages:
                     st.markdown(f"""
                     <div class="source-card">
                         <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
-                            <span style="font-size:11px;color:#6a6a6a;font-weight:500;">SOURCE {i:02d}</span>
+                            <span style="font-size:11px;color:#6e6e6e;font-weight:500;">
+                                SOURCE {i:02d}
+                            </span>
                             <span class="source-badge">{pct}%</span>
                         </div>
-                        <div style="font-size:13px;color:#ececec;margin-bottom:4px;">{src['question']}</div>
-                        <div style="font-size:12px;color:#6a6a6a;">{preview}</div>
+                        <div style="font-size:13px;color:#e0e0e0;margin-bottom:4px;">
+                            {src['question']}
+                        </div>
+                        <div style="font-size:12px;color:#6e6e6e;">{preview}</div>
                     </div>
                     """, unsafe_allow_html=True)
 
 # copyright
 st.markdown("""
-<div style="text-align:center; padding:24px 0 8px; color:#4a4a4a; font-size:11px;">
+<div style="text-align:center; padding:16px 0 4px;
+            color:#3a3a3a; font-size:11px;">
     © 2024 CampusGuideGPT · Hochschule Harz · All rights reserved
 </div>
 """, unsafe_allow_html=True)
 
-# chat input — always at bottom
+# chat input
 if query := st.chat_input("Ask anything about Hochschule Harz..."):
+    # user message
     st.session_state.messages.append({"role": "user", "content": query})
     with st.chat_message("user"):
         st.markdown(query)
 
+    # assistant response
     with st.chat_message("assistant"):
         with st.spinner(""):
             hits   = vectors.search(encode(query))
             answer = llm.complete(build_prompt(query, hits))
 
         if answer:
-            st.markdown(answer)
+            # typing animation
+            stream_response(answer)
+
             if hits:
                 with st.expander("Sources", expanded=False):
                     for i, src in enumerate(hits, 1):
@@ -98,13 +110,18 @@ if query := st.chat_input("Ask anything about Hochschule Harz..."):
                         st.markdown(f"""
                         <div class="source-card">
                             <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
-                                <span style="font-size:11px;color:#6a6a6a;font-weight:500;">SOURCE {i:02d}</span>
+                                <span style="font-size:11px;color:#6e6e6e;font-weight:500;">
+                                    SOURCE {i:02d}
+                                </span>
                                 <span class="source-badge">{pct}%</span>
                             </div>
-                            <div style="font-size:13px;color:#ececec;margin-bottom:4px;">{src['question']}</div>
-                            <div style="font-size:12px;color:#6a6a6a;">{preview}</div>
+                            <div style="font-size:13px;color:#e0e0e0;margin-bottom:4px;">
+                                {src['question']}
+                            </div>
+                            <div style="font-size:12px;color:#6e6e6e;">{preview}</div>
                         </div>
                         """, unsafe_allow_html=True)
+
             st.session_state.messages.append({
                 "role": "assistant",
                 "content": answer,
