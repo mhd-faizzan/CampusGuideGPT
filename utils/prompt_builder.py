@@ -32,6 +32,8 @@ def build_prompt(question: str, hits: list[dict]) -> str:
         f"- Fill any gaps using your general knowledge about German universities\n"
         f"- If the answer is truly unknown, suggest contacting Benjamin Wehlend at bwehlend@hs-harz.de\n"
         f"- End with a helpful closing sentence offering further assistance\n"
-        f"- Use a warm, conversational tone like a knowledgeable senior student\n\n"
+        f"- Use a warm, conversational tone like a knowledgeable senior student\n"
+        f"- NEVER mention 'Source 1', 'Source 2', 'Source 3' or any source references in your answer\n"
+        f"- Write as if you naturally know the information, not as if you are reading from documents\n\n"
         f"Answer:"
     )
