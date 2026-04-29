@@ -115,4 +115,3 @@ MIT
 
 ---
 
-*Built for Hochschule Harz as part of a project on applied AI and retrieval-augmented generation.*
