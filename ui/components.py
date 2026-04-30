@@ -111,6 +111,6 @@ def render_footer():
             <span class="footer-gradient-text">System Online</span>
         </div>
         <p>Powered by <strong>Llama 3.3</strong> · <strong>Pinecone</strong> · <strong>Sentence Transformers</strong></p>
-        <p style="font-size:11px;margin-top:8px;">© 2024 CampusGuideGPT · Hochschule Harz</p>
+        <p style="font-size:11px;margin-top:8px;">© 2026 CampusGuideGPT · Hochschule Harz</p>
     </div>
     """, unsafe_allow_html=True)
