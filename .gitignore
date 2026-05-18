@@ -1,2 +1,6 @@
 .venv/
 .env
+usage_counter.json
+__pycache__/
+*.pyc
+.DS_Store
