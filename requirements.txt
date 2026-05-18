@@ -1,7 +1,5 @@
 streamlit
 sentence-transformers
 pinecone
-pandas
 requests
-openpyxl
-openai
+
