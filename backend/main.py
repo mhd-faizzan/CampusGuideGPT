@@ -1,4 +1,5 @@
 import logging
+import fcntl
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -12,7 +13,7 @@ from services.embedding import encode
 from services.vector_db import VectorService
 from services.llm_service import LLMService
 from utils.prompt_builder import build_prompt
-from utils.rate_tracker import is_limit_reached, increment
+from utils.rate_tracker import is_limit_reached, increment, _load
 from utils.sanitizer import sanitize
 
 logging.basicConfig(
@@ -47,11 +48,25 @@ def health():
     return {"status": "ok"}
 
 
+@app.get("/stats")
+def stats():
+    with open("usage_counter.json", "a+") as f:
+        fcntl.flock(f, fcntl.LOCK_SH)
+        f.seek(0)
+        data = _load(f)
+        fcntl.flock(f, fcntl.LOCK_UN)
+    return {
+        "date":             data["date"],
+        "requests_today":   data["count"],
+        "daily_limit":      DAILY_LIMIT,
+        "remaining":        max(0, DAILY_LIMIT - data["count"]),
+    }
+
+
 @app.post("/ask")
 @limiter.limit(RATE_LIMIT)
 async def ask(request: Request, body: QueryRequest):
 
-    # sanitize input
     is_valid, result = sanitize(body.question)
     if not is_valid:
         return JSONResponse(status_code=400, content={"error": result})
