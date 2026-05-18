@@ -12,68 +12,66 @@ export default function ChatWindow({ messages, loading }) {
     <div style={{
       flex: 1,
       overflowY: "auto",
-      padding: "32px 24px",
       display: "flex",
       flexDirection: "column",
-      gap: "16px",
-      maxWidth: "800px",
-      width: "100%",
-      margin: "0 auto",
     }}>
-      {messages.length === 0 && (
+      {messages.length === 0 ? (
         <div style={{
           flex: 1,
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          gap: "16px",
-          opacity: 0.5,
-          paddingTop: "80px",
+          gap: "12px",
         }}>
-          <div style={{ fontSize: "48px" }}>🎓</div>
-          <div style={{ fontFamily: "Syne", fontSize: "20px", fontWeight: 600 }}>
-            Ask me anything
+          <div style={{ fontSize: "36px" }}>🎓</div>
+          <div style={{
+            fontSize: "22px",
+            fontWeight: 600,
+            color: "#ececec",
+          }}>
+            CampusGuideGPT
           </div>
-          <div style={{ fontSize: "14px", color: "var(--text-muted)", textAlign: "center" }}>
-            admissions, campus life, programs, accommodation
+          <div style={{ fontSize: "14px", color: "#8e8ea0" }}>
+            your AI guide for Hochschule Harz
           </div>
         </div>
-      )}
-
-      {messages.map((msg, i) => (
-        <MessageBubble key={i} message={msg} />
-      ))}
-
-      {loading && (
+      ) : (
         <div style={{
+          maxWidth: "680px",
+          width: "100%",
+          margin: "0 auto",
+          padding: "40px 24px",
           display: "flex",
-          gap: "6px",
-          padding: "16px 20px",
-          background: "var(--glass)",
-          border: "1px solid var(--glass-border)",
-          borderRadius: "16px",
-          width: "fit-content",
-          backdropFilter: "blur(10px)",
+          flexDirection: "column",
+          gap: "24px",
         }}>
-          {[0, 1, 2].map((i) => (
-            <div key={i} style={{
-              width: 8, height: 8,
-              borderRadius: "50%",
-              background: "var(--accent)",
-              animation: `bounce 1s infinite ${i * 0.15}s`,
-            }} />
+          {messages.map((msg, i) => (
+            <MessageBubble key={i} message={msg} />
           ))}
-          <style>{`
-            @keyframes bounce {
-              0%, 100% { transform: translateY(0); }
-              50% { transform: translateY(-6px); }
-            }
-          `}</style>
+
+          {loading && (
+            <div style={{ display: "flex", gap: "4px", paddingLeft: "4px" }}>
+              {[0, 1, 2].map((i) => (
+                <div key={i} style={{
+                  width: 7, height: 7,
+                  borderRadius: "50%",
+                  background: "#8e8ea0",
+                  animation: `bounce 1s infinite ${i * 0.15}s`,
+                }} />
+              ))}
+              <style>{`
+                @keyframes bounce {
+                  0%, 100% { transform: translateY(0); opacity: 0.4; }
+                  50% { transform: translateY(-5px); opacity: 1; }
+                }
+              `}</style>
+            </div>
+          )}
+
+          <div ref={bottomRef} />
         </div>
       )}
-
-      <div ref={bottomRef} />
     </div>
   )
 }
