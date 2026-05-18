@@ -20,7 +20,7 @@ NAMESPACE   = "ns1"
 MAX_TOKENS  = 2048
 
 RATE_LIMIT  = "10/minute"
-DAILY_LIMIT = 100
+DAILY_LIMIT = int(os.getenv("DAILY_LIMIT", "100"))
 
-if not all([PINECONE_API_KEY, PINECONE_INDEX, PINECONE_HOST, GROQ_API_KEY]):
-    logger.warning("missing env vars — check your .env file")
+# your frontend url — change this when deployed
+ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173").split(",")
