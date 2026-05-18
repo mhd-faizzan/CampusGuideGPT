@@ -13,6 +13,7 @@ from services.vector_db import VectorService
 from services.llm_service import LLMService
 from utils.prompt_builder import build_prompt
 from utils.rate_tracker import is_limit_reached, increment
+from utils.sanitizer import sanitize
 
 logging.basicConfig(
     level=logging.INFO,
@@ -49,10 +50,13 @@ def health():
 @app.post("/ask")
 @limiter.limit(RATE_LIMIT)
 async def ask(request: Request, body: QueryRequest):
-    question = body.question.strip()
 
-    if not question:
-        return JSONResponse(status_code=400, content={"error": "question is empty"})
+    # sanitize input
+    is_valid, result = sanitize(body.question)
+    if not is_valid:
+        return JSONResponse(status_code=400, content={"error": result})
+
+    question = result
 
     if is_limit_reached(DAILY_LIMIT):
         logger.warning("daily limit reached")
