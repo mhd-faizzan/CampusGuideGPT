@@ -7,7 +7,7 @@ from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 from pydantic import BaseModel
 
-from config.settings import RATE_LIMIT, DAILY_LIMIT
+from config.settings import RATE_LIMIT, DAILY_LIMIT, ALLOWED_ORIGINS
 from services.embedding import encode
 from services.vector_db import VectorService
 from services.llm_service import LLMService
@@ -28,7 +28,7 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -54,7 +54,6 @@ async def ask(request: Request, body: QueryRequest):
     if not question:
         return JSONResponse(status_code=400, content={"error": "question is empty"})
 
-    # check global daily limit
     if is_limit_reached(DAILY_LIMIT):
         logger.warning("daily limit reached")
         return JSONResponse(
@@ -71,7 +70,6 @@ async def ask(request: Request, body: QueryRequest):
         if not answer:
             return JSONResponse(status_code=500, content={"error": "no response from llm"})
 
-        # only increment on successful response
         increment()
 
         return {"answer": answer, "sources": hits}
