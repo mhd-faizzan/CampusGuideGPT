@@ -18,69 +18,71 @@ export default function InputBar({ onSend, loading }) {
 
   return (
     <div style={{
-      padding: "16px 24px 24px",
-      borderTop: "1px solid var(--glass-border)",
-      backdropFilter: "blur(20px)",
-      background: "var(--glass)",
+      padding: "12px 24px 24px",
+      background: "#212121",
     }}>
       <div style={{
-        maxWidth: "800px",
+        maxWidth: "680px",
         margin: "0 auto",
         display: "flex",
-        gap: "12px",
         alignItems: "flex-end",
+        gap: "8px",
+        background: "#2f2f2f",
+        border: "1px solid #3f3f3f",
+        borderRadius: "16px",
+        padding: "12px 16px",
       }}>
         <textarea
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKey}
-          placeholder="ask anything about Hochschule Harz..."
+          placeholder="Message CampusGuideGPT..."
           rows={1}
           style={{
             flex: 1,
-            background: "var(--glass)",
-            border: "1px solid var(--glass-border)",
-            borderRadius: "14px",
-            padding: "14px 18px",
-            color: "var(--text)",
+            background: "none",
+            border: "none",
+            outline: "none",
+            color: "#ececec",
             fontSize: "15px",
             resize: "none",
-            outline: "none",
-            fontFamily: "DM Sans, sans-serif",
+            fontFamily: "inherit",
             lineHeight: "1.5",
-            transition: "border 0.2s",
+            maxHeight: "120px",
+            overflowY: "auto",
           }}
-          onFocus={(e) => e.target.style.border = "1px solid var(--accent)"}
-          onBlur={(e) => e.target.style.border = "1px solid var(--glass-border)"}
+          onInput={(e) => {
+            e.target.style.height = "auto"
+            e.target.style.height = e.target.scrollHeight + "px"
+          }}
         />
         <button
           onClick={handleSend}
           disabled={loading || !input.trim()}
           style={{
-            width: "48px",
-            height: "48px",
-            borderRadius: "14px",
-            background: loading || !input.trim() ? "var(--glass)" : "var(--accent)",
-            border: "1px solid var(--glass-border)",
-            color: "var(--text)",
-            fontSize: "20px",
+            width: "32px",
+            height: "32px",
+            borderRadius: "8px",
+            background: loading || !input.trim() ? "#3f3f3f" : "#ececec",
+            border: "none",
+            color: loading || !input.trim() ? "#8e8ea0" : "#212121",
+            fontSize: "16px",
             cursor: loading || !input.trim() ? "not-allowed" : "pointer",
-            transition: "all 0.2s",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
+            flexShrink: 0,
+            transition: "all 0.15s",
           }}
         >
-          {loading ? "⏳" : "↑"}
+          ↑
         </button>
       </div>
       <div style={{
         textAlign: "center",
         fontSize: "11px",
-        color: "var(--text-muted)",
-        marginTop: "10px",
-        maxWidth: "800px",
-        margin: "10px auto 0",
+        color: "#8e8ea0",
+        marginTop: "8px",
       }}>
         press enter to send · shift+enter for new line
       </div>
