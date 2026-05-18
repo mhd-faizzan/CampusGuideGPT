@@ -7,11 +7,12 @@ from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 from pydantic import BaseModel
 
-from config.settings import RATE_LIMIT
+from config.settings import RATE_LIMIT, DAILY_LIMIT
 from services.embedding import encode
 from services.vector_db import VectorService
 from services.llm_service import LLMService
 from utils.prompt_builder import build_prompt
+from utils.rate_tracker import is_limit_reached, increment
 
 logging.basicConfig(
     level=logging.INFO,
@@ -19,7 +20,6 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# rate limiter
 limiter = Limiter(key_func=get_remote_address)
 
 app = FastAPI(title="CampusGuideGPT API")
@@ -33,7 +33,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# init services once at startup
 vectors = VectorService()
 llm     = LLMService()
 
@@ -55,6 +54,14 @@ async def ask(request: Request, body: QueryRequest):
     if not question:
         return JSONResponse(status_code=400, content={"error": "question is empty"})
 
+    # check global daily limit
+    if is_limit_reached(DAILY_LIMIT):
+        logger.warning("daily limit reached")
+        return JSONResponse(
+            status_code=429,
+            content={"error": "daily limit reached, come back tomorrow."}
+        )
+
     try:
         vector = encode(question)
         hits   = vectors.search(vector)
@@ -63,6 +70,9 @@ async def ask(request: Request, body: QueryRequest):
 
         if not answer:
             return JSONResponse(status_code=500, content={"error": "no response from llm"})
+
+        # only increment on successful response
+        increment()
 
         return {"answer": answer, "sources": hits}
 
