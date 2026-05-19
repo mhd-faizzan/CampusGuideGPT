@@ -8,7 +8,7 @@ from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 from pydantic import BaseModel
 
-from config.settings import RATE_LIMIT, DAILY_LIMIT, ALLOWED_ORIGINS
+from config.settings import RATE_LIMIT, DAILY_LIMIT, ALLOWED_ORIGINS, STATS_SECRET
 from services.embedding import encode
 from services.vector_db import VectorService
 from services.llm_service import LLMService
@@ -49,17 +49,19 @@ def health():
 
 
 @app.get("/stats")
-def stats():
+def stats(secret: str = ""):
+    if secret != STATS_SECRET:
+        return JSONResponse(status_code=403, content={"error": "forbidden"})
     with open("usage_counter.json", "a+") as f:
         fcntl.flock(f, fcntl.LOCK_SH)
         f.seek(0)
         data = _load(f)
         fcntl.flock(f, fcntl.LOCK_UN)
     return {
-        "date":             data["date"],
-        "requests_today":   data["count"],
-        "daily_limit":      DAILY_LIMIT,
-        "remaining":        max(0, DAILY_LIMIT - data["count"]),
+        "date":           data["date"],
+        "requests_today": data["count"],
+        "daily_limit":    DAILY_LIMIT,
+        "remaining":      max(0, DAILY_LIMIT - data["count"]),
     }
 
 
