@@ -3,7 +3,13 @@ import ChatWindow from "./components/ChatWindow"
 import InputBar from "./components/InputBar"
 
 export default function App() {
-  const [messages, setMessages] = useState([])
+  const [messages, setMessages] = useState([
+    {
+      role: "bot",
+      content: "Hi! I'm CampusGuideGPT 🎓 Ask me anything about Hochschule Harz — admissions, campus life, accommodation, or programs.",
+      sources: [],
+    }
+  ])
   const [loading, setLoading] = useState(false)
 
   const askQuestion = async (question) => {
