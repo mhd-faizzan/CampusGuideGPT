@@ -2,6 +2,8 @@ import { useState } from "react"
 import ChatWindow from "./components/ChatWindow"
 import InputBar from "./components/InputBar"
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000"
+
 export default function App() {
   const [messages, setMessages] = useState([
     {
@@ -17,7 +19,7 @@ export default function App() {
     setLoading(true)
 
     try {
-      const res = await fetch("http://localhost:8000/ask", {
+      const res = await fetch(`${API_URL}/ask`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ question }),
