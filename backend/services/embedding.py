@@ -1,14 +1,13 @@
 import logging
-from sentence_transformers import SentenceTransformer
+from fastembed import TextEmbedding
 from config.settings import EMBED_MODEL
 
 logger = logging.getLogger(__name__)
 
-# load at import time so first request isn't slow
 logger.info("loading embedding model...")
-_model = SentenceTransformer(EMBED_MODEL)
+_model = TextEmbedding(model_name="sentence-transformers/all-MiniLM-L6-v2")
 logger.info("embedding model ready")
 
 def encode(text: str) -> list[float]:
-    vector = _model.encode(text, convert_to_numpy=True)
-    return vector.flatten().tolist()
+    vectors = list(_model.embed([text]))
+    return vectors[0].tolist()
