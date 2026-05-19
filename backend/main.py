@@ -44,12 +44,14 @@ class QueryRequest(BaseModel):
 
 
 @app.get("/health")
-def health():
+@limiter.limit("30/minute")
+async def health(request: Request):
     return {"status": "ok"}
 
 
 @app.get("/stats")
-def stats(secret: str = ""):
+@limiter.limit("10/minute")
+async def stats(request: Request, secret: str = ""):
     if secret != STATS_SECRET:
         return JSONResponse(status_code=403, content={"error": "forbidden"})
     with open("usage_counter.json", "a+") as f:
