@@ -16,7 +16,7 @@ class LLMService:
             "model": GROQ_MODEL,
             "messages": [{"role": "user", "content": prompt}],
             "max_tokens": MAX_TOKENS,
-            "temperature": 0.7,
+            "temperature": 0.2,
         }
         try:
             r = httpx.post(GROQ_URL, headers=self.headers, json=payload, timeout=30)

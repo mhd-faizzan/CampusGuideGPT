@@ -4,6 +4,8 @@ from config.settings import PINECONE_API_KEY, PINECONE_INDEX, PINECONE_HOST, TOP
 
 logger = logging.getLogger(__name__)
 
+MIN_SCORE = 0.55  # filter out irrelevant matches
+
 class VectorService:
     def __init__(self):
         try:
@@ -22,13 +24,20 @@ class VectorService:
                 include_metadata=True,
                 namespace=NAMESPACE,
             )
+
+            # only keep matches we're actually confident about
+            confident_matches = [m for m in results.matches if m.score > MIN_SCORE]
+
+            if not confident_matches:
+                logger.info("no matches above confidence threshold (%.2f)", MIN_SCORE)
+
             return [
                 {
                     "question": m.metadata.get("question", ""),
                     "answer":   m.metadata.get("answer", ""),
                     "score":    m.score,
                 }
-                for m in results.matches
+                for m in confident_matches
             ]
         except Exception as e:
             logger.error("pinecone search failed: %s", str(e))
