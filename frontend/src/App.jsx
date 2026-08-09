@@ -4,6 +4,7 @@ import { auth } from "./firebase"
 import ChatWindow from "./components/ChatWindow"
 import InputBar from "./components/InputBar"
 import Login from "./components/Login"
+import VerifyEmail from "./components/VerifyEmail"
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000"
 
@@ -75,6 +76,7 @@ export default function App() {
 
   if (authLoading) return null
   if (!user) return <Login />
+  if (!user.emailVerified) return <VerifyEmail />
 
   return (
     <div style={{
