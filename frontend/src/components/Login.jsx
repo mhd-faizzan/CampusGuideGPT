@@ -3,12 +3,18 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   sendEmailVerification,
+  updateProfile,
 } from "firebase/auth"
-import { auth } from "../firebase"
+import { doc, setDoc } from "firebase/firestore"
+import { auth, db } from "../firebase"
 
 export default function Login() {
+  const [firstName, setFirstName] = useState("")
+  const [lastName, setLastName] = useState("")
+  const [isHHStudent, setIsHHStudent] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [showPassword, setShowPassword] = useState(false)
   const [isSignup, setIsSignup] = useState(false)
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
@@ -17,10 +23,24 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError("")
+
+    if (isSignup && !isHHStudent) {
+      setError("please select an option")
+      return
+    }
+
     setLoading(true)
     try {
       if (isSignup) {
         const cred = await createUserWithEmailAndPassword(auth, email, password)
+        await updateProfile(cred.user, { displayName: `${firstName} ${lastName}` })
+        await setDoc(doc(db, "users", cred.user.uid), {
+          firstName,
+          lastName,
+          email,
+          isHHStudent,
+          createdAt: new Date().toISOString(),
+        })
         await sendEmailVerification(cred.user)
       } else {
         await signInWithEmailAndPassword(auth, email, password)
@@ -41,6 +61,7 @@ export default function Login() {
     fontSize: 14,
     outline: "none",
     transition: "border 0.15s",
+    width: "100%",
   })
 
   return (
@@ -50,9 +71,10 @@ export default function Login() {
       justifyContent: "center",
       height: "100vh",
       background: "#212121",
+      padding: 20,
     }}>
       <form onSubmit={handleSubmit} style={{
-        width: 360,
+        width: 380,
         padding: "36px 32px",
         borderRadius: 16,
         background: "#2a2a2a",
@@ -69,6 +91,31 @@ export default function Login() {
           {isSignup ? "Create an account to get started" : "Sign in to continue"}
         </p>
 
+        {isSignup && (
+          <div style={{ display: "flex", gap: 10 }}>
+            <input
+              type="text"
+              placeholder="First name"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              onFocus={() => setFocused("firstName")}
+              onBlur={() => setFocused("")}
+              required
+              style={inputStyle("firstName")}
+            />
+            <input
+              type="text"
+              placeholder="Last name"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              onFocus={() => setFocused("lastName")}
+              onBlur={() => setFocused("")}
+              required
+              style={inputStyle("lastName")}
+            />
+          </div>
+        )}
+
         <input
           type="email"
           placeholder="Email"
@@ -79,17 +126,43 @@ export default function Login() {
           required
           style={inputStyle("email")}
         />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          onFocus={() => setFocused("password")}
-          onBlur={() => setFocused("")}
-          required
-          minLength={6}
-          style={inputStyle("password")}
-        />
+
+        <div style={{ position: "relative" }}>
+          <input
+            type={showPassword ? "text" : "password"}
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            onFocus={() => setFocused("password")}
+            onBlur={() => setFocused("")}
+            required
+            minLength={6}
+            style={{ ...inputStyle("password"), paddingRight: 44 }}
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            style={{
+              position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)",
+              background: "none", border: "none", color: "#8e8ea0", cursor: "pointer", fontSize: 13,
+            }}
+          >
+            {showPassword ? "hide" : "show"}
+          </button>
+        </div>
+
+        {isSignup && (
+          <select
+            value={isHHStudent}
+            onChange={(e) => setIsHHStudent(e.target.value)}
+            required
+            style={{ ...inputStyle("hh"), color: isHHStudent ? "#ececec" : "#8e8ea0" }}
+          >
+            <option value="" disabled>Are you a student at Hochschule Harz?</option>
+            <option value="yes">Yes</option>
+            <option value="no">No</option>
+          </select>
+        )}
 
         {error && (
           <div style={{
@@ -114,15 +187,8 @@ export default function Login() {
           fontSize: 14,
           cursor: loading ? "not-allowed" : "pointer",
           marginTop: 6,
-          transition: "all 0.15s",
         }}>
-          {loading ? (
-            <span style={{
-              display: "inline-block", width: 14, height: 14,
-              border: "2px solid #8e8ea0", borderTopColor: "transparent",
-              borderRadius: "50%", animation: "spin 0.6s linear infinite",
-            }} />
-          ) : isSignup ? "Sign up" : "Sign in"}
+          {loading ? "..." : isSignup ? "Sign up" : "Sign in"}
         </button>
 
         <p onClick={() => { setIsSignup(!isSignup); setError("") }} style={{
@@ -137,8 +203,6 @@ export default function Login() {
             {isSignup ? "Sign in" : "Sign up"}
           </span>
         </p>
-
-        <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
       </form>
     </div>
   )
