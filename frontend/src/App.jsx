@@ -1,10 +1,16 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { onAuthStateChanged, signOut } from "firebase/auth"
+import { auth } from "./firebase"
 import ChatWindow from "./components/ChatWindow"
 import InputBar from "./components/InputBar"
+import Login from "./components/Login"
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000"
 
 export default function App() {
+  const [user, setUser] = useState(null)
+  const [authLoading, setAuthLoading] = useState(true)
+
   const [messages, setMessages] = useState([
     {
       role: "bot",
@@ -13,6 +19,14 @@ export default function App() {
     }
   ])
   const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, (u) => {
+      setUser(u)
+      setAuthLoading(false)
+    })
+    return unsub
+  }, [])
 
   const askQuestion = async (question) => {
     setMessages((prev) => [...prev, { role: "user", content: question }])
@@ -59,6 +73,9 @@ export default function App() {
     }
   }
 
+  if (authLoading) return null
+  if (!user) return <Login />
+
   return (
     <div style={{
       display: "flex",
@@ -66,6 +83,13 @@ export default function App() {
       height: "100vh",
       background: "#212121",
     }}>
+      <div style={{ display: "flex", justifyContent: "flex-end", padding: 8 }}>
+        <button onClick={() => signOut(auth)} style={{
+          background: "none", border: "none", color: "#8e8ea0", cursor: "pointer", fontSize: 13,
+        }}>
+          Sign out
+        </button>
+      </div>
       <ChatWindow messages={messages} loading={loading} />
       <InputBar onSend={askQuestion} loading={loading} />
     </div>
