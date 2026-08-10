@@ -8,3 +8,5 @@ node_modules/
 frontend/node_modules/
 backend/env.yaml
 backend/firebase-key.json
+backend/data/knowledge_base.json
+backend/scripts/upsert_knowledge.py
