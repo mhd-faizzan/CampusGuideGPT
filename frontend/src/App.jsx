@@ -29,14 +29,18 @@ export default function App() {
     return unsub
   }, [])
 
-  const askQuestion = async (question) => {
+    const askQuestion = async (question) => {
     setMessages((prev) => [...prev, { role: "user", content: question }])
     setLoading(true)
 
     try {
+      const token = await auth.currentUser.getIdToken()
       const res = await fetch(`${API_URL}/ask`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
         body: JSON.stringify({ question }),
       })
 
