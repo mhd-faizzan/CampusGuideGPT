@@ -22,6 +22,25 @@ export default function Login() {
   const [focused, setFocused] = useState("")
   const [resetSent, setResetSent] = useState(false)
 
+  const friendlyError = (code) => {
+    switch (code) {
+      case "auth/invalid-credential":
+      case "auth/wrong-password":
+      case "auth/user-not-found":
+        return "Incorrect email or password"
+      case "auth/email-already-in-use":
+        return "An account with this email already exists"
+      case "auth/weak-password":
+        return "Password should be at least 6 characters"
+      case "auth/invalid-email":
+        return "Enter a valid email address"
+      case "auth/too-many-requests":
+        return "Too many attempts. Try again in a bit"
+      default:
+        return "Something went wrong. Please try again"
+    }
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError("")
@@ -48,7 +67,7 @@ export default function Login() {
         await signInWithEmailAndPassword(auth, email, password)
       }
     } catch (err) {
-      setError(err.message.replace("Firebase: ", ""))
+      setError(friendlyError(err.code))
     } finally {
       setLoading(false)
     }
@@ -64,7 +83,7 @@ export default function Login() {
       await sendPasswordResetEmail(auth, email)
       setResetSent(true)
     } catch (err) {
-      setError(err.message.replace("Firebase: ", ""))
+      setError(friendlyError(err.code))
     }
   }
 
