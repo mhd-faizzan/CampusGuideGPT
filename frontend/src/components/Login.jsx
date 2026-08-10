@@ -3,6 +3,7 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   sendEmailVerification,
+  sendPasswordResetEmail,
   updateProfile,
 } from "firebase/auth"
 import { doc, setDoc } from "firebase/firestore"
@@ -19,6 +20,7 @@ export default function Login() {
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
   const [focused, setFocused] = useState("")
+  const [resetSent, setResetSent] = useState(false)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -49,6 +51,20 @@ export default function Login() {
       setError(err.message.replace("Firebase: ", ""))
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleReset = async () => {
+    if (!email) {
+      setError("enter your email first, then click forgot password")
+      return
+    }
+    setError("")
+    try {
+      await sendPasswordResetEmail(auth, email)
+      setResetSent(true)
+    } catch (err) {
+      setError(err.message.replace("Firebase: ", ""))
     }
   }
 
@@ -84,11 +100,11 @@ export default function Login() {
         gap: 14,
       }}>
         <div style={{ textAlign: "center", fontSize: "34px", marginBottom: 4 }}>🎓</div>
-        <h1 style={{ color: "#ececec", fontSize: 21, fontWeight: 600, margin: 0, textAlign: "center" }}>
-          CampusGuideGPT
+        <h1 style={{ color: "#ececec", fontSize: 22, fontWeight: 600, margin: 0, textAlign: "center" }}>
+          {isSignup ? "Create your account" : "Welcome back"}
         </h1>
         <p style={{ color: "#8e8ea0", fontSize: 14, margin: "0 0 10px", textAlign: "center" }}>
-          {isSignup ? "Create an account to get started" : "Sign in to continue"}
+          {isSignup ? "Sign up to start using CampusGuideGPT" : "Sign in to CampusGuideGPT to continue"}
         </p>
 
         {isSignup && (
@@ -118,7 +134,7 @@ export default function Login() {
 
         <input
           type="email"
-          placeholder="Email"
+          placeholder="Email address"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           onFocus={() => setFocused("email")}
@@ -147,9 +163,21 @@ export default function Login() {
               background: "none", border: "none", color: "#8e8ea0", cursor: "pointer", fontSize: 13,
             }}
           >
-            {showPassword ? "hide" : "show"}
+            {showPassword ? "Hide" : "Show"}
           </button>
         </div>
+
+        {!isSignup && (
+          <p onClick={handleReset} style={{
+            color: "#8e8ea0",
+            fontSize: 12,
+            textAlign: "right",
+            cursor: "pointer",
+            margin: "-6px 0 0",
+          }}>
+            {resetSent ? "Reset email sent — check your inbox" : "Forgot password?"}
+          </p>
+        )}
 
         {isSignup && (
           <select
@@ -191,14 +219,14 @@ export default function Login() {
           {loading ? "..." : isSignup ? "Sign up" : "Sign in"}
         </button>
 
-        <p onClick={() => { setIsSignup(!isSignup); setError("") }} style={{
+        <p onClick={() => { setIsSignup(!isSignup); setError(""); setResetSent(false) }} style={{
           color: "#8e8ea0",
           fontSize: 13,
           textAlign: "center",
           cursor: "pointer",
           marginTop: 6,
         }}>
-          {isSignup ? "Already have an account? " : "No account? "}
+          {isSignup ? "Already have an account? " : "Don't have an account? "}
           <span style={{ color: "#ececec", textDecoration: "underline" }}>
             {isSignup ? "Sign in" : "Sign up"}
           </span>
