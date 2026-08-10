@@ -1,6 +1,7 @@
 import logging
 import fcntl
-from fastapi import FastAPI, Request
+import json
+from fastapi import FastAPI, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from slowapi import Limiter, _rate_limit_exceeded_handler
@@ -15,6 +16,7 @@ from services.llm_service import LLMService
 from utils.prompt_builder import build_prompt
 from utils.rate_tracker import is_limit_reached, increment, _load
 from utils.sanitizer import sanitize
+from utils.firebase_auth import verify_token
 
 logging.basicConfig(
     level=logging.INFO,
@@ -37,6 +39,9 @@ app.add_middleware(
 
 vectors = VectorService()
 llm     = LLMService()
+
+USER_DAILY_LIMIT = 20
+_user_usage = {}
 
 
 class QueryRequest(BaseModel):
@@ -69,7 +74,15 @@ async def stats(request: Request, secret: str = ""):
 
 @app.post("/ask")
 @limiter.limit(RATE_LIMIT)
-async def ask(request: Request, body: QueryRequest):
+async def ask(request: Request, body: QueryRequest, user=Depends(verify_token)):
+
+    uid = user["uid"]
+    used = _user_usage.get(uid, 0)
+    if used >= USER_DAILY_LIMIT:
+        return JSONResponse(
+            status_code=429,
+            content={"error": f"you've hit your daily limit of {USER_DAILY_LIMIT} questions."}
+        )
 
     is_valid, result = sanitize(body.question)
     if not is_valid:
@@ -94,6 +107,7 @@ async def ask(request: Request, body: QueryRequest):
             return JSONResponse(status_code=500, content={"error": "no response from llm"})
 
         increment()
+        _user_usage[uid] = used + 1
 
         return {"answer": answer, "sources": hits}
 
