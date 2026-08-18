@@ -12,7 +12,7 @@ PINECONE_HOST    = os.getenv("PINECONE_HOST", "")
 
 GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
 GROQ_URL     = "https://api.groq.com/openai/v1/chat/completions"
-GROQ_MODEL   = "llama-3.3-70b-versatile"
+GROQ_MODEL   = "openai/gpt-oss-120b"
 
 EMBED_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 TOP_K       = 3
