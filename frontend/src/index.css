@@ -25,3 +25,31 @@ body {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: #3f3f3f; border-radius: 10px; }
 ::-webkit-scrollbar-thumb:hover { background: #555555; }
+
+/* markdown bubble styles — global reset kills default spacing so gotta add it back */
+.message-markdown p {
+  margin-bottom: 10px;
+}
+.message-markdown p:last-child {
+  margin-bottom: 0;
+}
+.message-markdown ul,
+.message-markdown ol {
+  margin: 8px 0 10px 20px;
+}
+.message-markdown li {
+  margin-bottom: 4px;
+}
+.message-markdown strong {
+  color: #fff;
+  font-weight: 600;
+}
+.message-markdown code {
+  background: #1a1a1a;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 13px;
+}
+.message-markdown a {
+  color: #7dabf8;
+}
