@@ -1,4 +1,5 @@
 import { useState } from "react"
+import ReactMarkdown from "react-markdown"
 
 export default function MessageBubble({ message }) {
   const [showSources, setShowSources] = useState(false)
@@ -25,10 +26,12 @@ export default function MessageBubble({ message }) {
         fontSize: "15px",
         lineHeight: "1.7",
         color: "#ececec",
-        whiteSpace: "pre-wrap",
         border: "1px solid #3a3a3a",
-      }}>
-        {message.content}
+      }}
+      className="message-markdown"
+      >
+        {/* markdown render fix — used to just dump raw string, now it actually parses ** and lists */}
+        <ReactMarkdown>{message.content}</ReactMarkdown>
       </div>
 
       {message.sources && message.sources.length > 0 && (
