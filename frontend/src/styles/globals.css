@@ -1,0 +1,400 @@
+@import "tailwindcss";
+
+/* ============================================================================
+   Design tokens — DARK is the base palette (dark-first, per DESIGN.md)
+   Resolution: [data-theme] wins; otherwise follow prefers-color-scheme.
+   ========================================================================== */
+:root {
+  --background: #0d0d0d;
+  --sidebar: #171717;
+  --surface: #212121;
+  --composer-bg: rgba(42, 42, 42, 0.8);
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --text-primary: #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.5);
+  --text-tertiary: rgba(255, 255, 255, 0.4);
+  --user-bubble: #2f2f2f;
+  --accent: #5b8def; /* links & focus rings only */
+  --danger: #ef4444;
+
+  --code-bg: rgba(255, 255, 255, 0.08);
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --background: #ffffff;
+    --sidebar: #f7f7f8;
+    --surface: #f4f4f5;
+    --composer-bg: rgba(255, 255, 255, 0.85);
+    --border-subtle: rgba(0, 0, 0, 0.06);
+    --text-primary: #0d0d0d;
+    --text-secondary: rgba(0, 0, 0, 0.55);
+    --text-tertiary: rgba(0, 0, 0, 0.4);
+    --user-bubble: #f4f4f5;
+    --accent: #2563eb;
+    --danger: #dc2626;
+    --code-bg: rgba(0, 0, 0, 0.06);
+  }
+}
+
+[data-theme="light"] {
+  --background: #ffffff;
+  --sidebar: #f7f7f8;
+  --surface: #f4f4f5;
+  --composer-bg: rgba(255, 255, 255, 0.85);
+  --border-subtle: rgba(0, 0, 0, 0.06);
+  --text-primary: #0d0d0d;
+  --text-secondary: rgba(0, 0, 0, 0.55);
+  --text-tertiary: rgba(0, 0, 0, 0.4);
+  --user-bubble: #f4f4f5;
+  --accent: #2563eb;
+  --danger: #dc2626;
+  --code-bg: rgba(0, 0, 0, 0.06);
+}
+
+[data-theme="dark"] {
+  --background: #0d0d0d;
+  --sidebar: #171717;
+  --surface: #212121;
+  --composer-bg: rgba(42, 42, 42, 0.8);
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --text-primary: #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.5);
+  --text-tertiary: rgba(255, 255, 255, 0.4);
+  --user-bubble: #2f2f2f;
+  --accent: #5b8def;
+  --danger: #ef4444;
+  --code-bg: rgba(255, 255, 255, 0.08);
+}
+
+/* Map tokens to Tailwind color utilities:
+   bg-canvas bg-sidebar bg-surface bg-bubble  border-subtle
+   text-fg text-muted text-faint text-accent text-danger  ring-accent */
+@theme inline {
+  --color-canvas: var(--background);
+  --color-sidebar: var(--sidebar);
+  --color-surface: var(--surface);
+  --color-bubble: var(--user-bubble);
+  --color-subtle: var(--border-subtle);
+  --color-fg: var(--text-primary);
+  --color-muted: var(--text-secondary);
+  --color-faint: var(--text-tertiary);
+  --color-accent: var(--accent);
+  --color-danger: var(--danger);
+}
+
+/* ============================================================================
+   Base
+   ========================================================================== */
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-subtle);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-tertiary);
+}
+
+/* ============================================================================
+   Typing indicator
+   ========================================================================== */
+@keyframes typing-bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+  50% {
+    transform: translateY(-4px);
+    opacity: 1;
+  }
+}
+.typing-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 9999px;
+  background: var(--text-secondary);
+  animation: typing-bounce 1s infinite;
+}
+
+/* ============================================================================
+   Markdown in assistant messages
+   (global reset removes default spacing — add back what markdown needs)
+   ========================================================================== */
+.message-markdown {
+  --md-code-bg: #0d1117; /* code blocks stay dark in both themes (Claude-style) */
+  --md-code-fg: #e6edf3;
+  font-size: 16px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+.message-markdown > :first-child {
+  margin-top: 0;
+}
+.message-markdown > :last-child {
+  margin-bottom: 0;
+}
+
+/* -- Paragraphs & inline -- */
+.message-markdown p {
+  margin: 0 0 14px;
+}
+.message-markdown strong {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.message-markdown em {
+  font-style: italic;
+}
+.message-markdown del {
+  opacity: 0.6;
+}
+.message-markdown a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.message-markdown a:hover {
+  text-decoration-thickness: 2px;
+}
+.message-markdown img {
+  max-width: 100%;
+  border-radius: 8px;
+  margin: 8px 0;
+}
+
+/* -- Headings: more space above, tight below -- */
+.message-markdown h1,
+.message-markdown h2,
+.message-markdown h3,
+.message-markdown h4 {
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  margin: 28px 0 10px;
+}
+.message-markdown h1 {
+  font-size: 22px;
+}
+.message-markdown h2 {
+  font-size: 19px;
+}
+.message-markdown h3 {
+  font-size: 16px;
+}
+.message-markdown h4 {
+  font-size: 15px;
+  color: var(--text-secondary);
+}
+
+/* -- Lists -- */
+.message-markdown ul,
+.message-markdown ol {
+  margin: 0 0 14px;
+  padding-left: 26px;
+}
+.message-markdown ul {
+  list-style: disc;
+}
+.message-markdown ol {
+  list-style: decimal;
+}
+.message-markdown li {
+  margin: 4px 0;
+  padding-left: 4px;
+}
+.message-markdown li::marker {
+  color: var(--text-tertiary);
+}
+.message-markdown li > ul,
+.message-markdown li > ol {
+  margin: 4px 0;
+}
+.message-markdown li > p {
+  margin: 0 0 6px;
+}
+.message-markdown input[type="checkbox"] {
+  margin-right: 8px;
+}
+
+/* -- Inline code -- */
+.message-markdown :not(pre) > code {
+  font-family: ui-monospace, "JetBrains Mono", SFMono-Regular, Menlo, monospace;
+  font-size: 0.86em;
+  background: var(--code-bg);
+  padding: 0.15em 0.4em;
+  border-radius: 5px;
+  white-space: break-spaces;
+}
+
+/* -- Code blocks -- */
+.message-markdown pre {
+  position: relative;
+  background: var(--md-code-bg);
+  color: var(--md-code-fg);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin: 16px 0;
+  overflow-x: auto;
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+.message-markdown pre code {
+  font-family: ui-monospace, "JetBrains Mono", SFMono-Regular, Menlo, monospace;
+  background: none;
+  padding: 0;
+  color: inherit;
+  white-space: pre;
+}
+.message-markdown pre[data-lang]::before {
+  content: attr(data-lang);
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 3px 10px;
+  font-size: 11px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: rgba(230, 237, 243, 0.5);
+  background: rgba(255, 255, 255, 0.05);
+  border-bottom-left-radius: 8px;
+}
+.message-markdown pre[data-lang] {
+  padding-top: 30px;
+}
+
+/* highlight.js token colors (GitHub-dark palette, on the dark code surface) */
+.message-markdown .hljs-comment,
+.message-markdown .hljs-quote {
+  color: #8b949e;
+  font-style: italic;
+}
+.message-markdown .hljs-keyword,
+.message-markdown .hljs-selector-tag,
+.message-markdown .hljs-literal,
+.message-markdown .hljs-type {
+  color: #ff7b72;
+}
+.message-markdown .hljs-string,
+.message-markdown .hljs-meta .hljs-string,
+.message-markdown .hljs-regexp {
+  color: #a5d6ff;
+}
+.message-markdown .hljs-number,
+.message-markdown .hljs-symbol,
+.message-markdown .hljs-bullet {
+  color: #79c0ff;
+}
+.message-markdown .hljs-title,
+.message-markdown .hljs-title.function_,
+.message-markdown .hljs-section {
+  color: #d2a8ff;
+}
+.message-markdown .hljs-attr,
+.message-markdown .hljs-attribute,
+.message-markdown .hljs-variable,
+.message-markdown .hljs-template-variable {
+  color: #7ee787;
+}
+.message-markdown .hljs-built_in,
+.message-markdown .hljs-class .hljs-title,
+.message-markdown .hljs-name {
+  color: #ffa657;
+}
+.message-markdown .hljs-emphasis {
+  font-style: italic;
+}
+.message-markdown .hljs-strong {
+  font-weight: 600;
+}
+
+/* -- Blockquote & rule -- */
+.message-markdown blockquote {
+  border-left: 3px solid var(--border-subtle);
+  padding: 2px 0 2px 14px;
+  margin: 16px 0;
+  color: var(--text-secondary);
+}
+.message-markdown blockquote > :last-child {
+  margin-bottom: 0;
+}
+.message-markdown hr {
+  border: none;
+  border-top: 1px solid var(--border-subtle);
+  margin: 24px 0;
+}
+
+/* -- Tables: real HTML tables, horizontal scroll when wide -- */
+.message-markdown .md-table-wrap {
+  margin: 16px 0;
+  overflow-x: auto;
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+}
+.message-markdown table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.message-markdown thead th {
+  background: var(--surface);
+  font-weight: 600;
+}
+.message-markdown th,
+.message-markdown td {
+  padding: 8px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-subtle);
+  border-right: 1px solid var(--border-subtle);
+}
+.message-markdown th:last-child,
+.message-markdown td:last-child {
+  border-right: none;
+}
+.message-markdown tbody tr:last-child td {
+  border-bottom: none;
+}
+.message-markdown tbody tr:nth-child(even) td {
+  background: rgba(128, 128, 128, 0.07);
+}
+
+/* ============================================================================
+   Reduced motion
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
