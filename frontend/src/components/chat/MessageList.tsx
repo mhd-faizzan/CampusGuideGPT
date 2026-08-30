@@ -20,11 +20,11 @@ export function MessageList({ messages }: MessageListProps) {
       aria-live="polite"
       aria-label="Conversation"
     >
-      <div className="mx-auto flex w-full max-w-[768px] flex-col gap-6 px-4 py-10 sm:px-6">
+      <div className="mx-auto flex w-full max-w-[768px] flex-col gap-9 px-4 py-12 sm:px-6">
         {messages.map((message) => (
           <Message key={message.id} message={message} />
         ))}
-        <div ref={bottomRef} />
+        <div ref={bottomRef} className="h-2" />
       </div>
     </div>
   )

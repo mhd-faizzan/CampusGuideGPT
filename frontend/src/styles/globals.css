@@ -151,8 +151,12 @@ body {
 .message-markdown {
   --md-code-bg: #0d1117; /* code blocks stay dark in both themes (Claude-style) */
   --md-code-fg: #e6edf3;
+  /* body sits a hair below full contrast so bold + headings read as the top of
+     the hierarchy — calmer on the eyes for long answers */
+  --md-body: color-mix(in srgb, var(--text-primary) 88%, transparent);
   font-size: 16px;
   line-height: 1.7;
+  color: var(--md-body);
   overflow-wrap: anywhere;
 }
 .message-markdown > :first-child {
@@ -164,7 +168,7 @@ body {
 
 /* -- Paragraphs & inline -- */
 .message-markdown p {
-  margin: 0 0 14px;
+  margin: 0 0 16px;
 }
 .message-markdown strong {
   font-weight: 600;
@@ -179,10 +183,12 @@ body {
 .message-markdown a {
   color: var(--accent);
   text-decoration: underline;
-  text-underline-offset: 2px;
+  text-decoration-color: color-mix(in srgb, currentColor 35%, transparent);
+  text-underline-offset: 3px;
+  transition: text-decoration-color 0.12s ease;
 }
 .message-markdown a:hover {
-  text-decoration-thickness: 2px;
+  text-decoration-color: currentColor;
 }
 .message-markdown img {
   max-width: 100%;
@@ -190,21 +196,22 @@ body {
   margin: 8px 0;
 }
 
-/* -- Headings: more space above, tight below -- */
+/* -- Headings: clear step above body, generous space before, tight after -- */
 .message-markdown h1,
 .message-markdown h2,
 .message-markdown h3,
 .message-markdown h4 {
   font-weight: 600;
   line-height: 1.3;
-  letter-spacing: -0.01em;
-  margin: 28px 0 10px;
+  letter-spacing: -0.011em;
+  color: var(--text-primary);
+  margin: 30px 0 12px;
 }
 .message-markdown h1 {
   font-size: 22px;
 }
 .message-markdown h2 {
-  font-size: 19px;
+  font-size: 18.5px;
 }
 .message-markdown h3 {
   font-size: 16px;
@@ -217,7 +224,7 @@ body {
 /* -- Lists -- */
 .message-markdown ul,
 .message-markdown ol {
-  margin: 0 0 14px;
+  margin: 0 0 16px;
   padding-left: 26px;
 }
 .message-markdown ul {
@@ -227,8 +234,11 @@ body {
   list-style: decimal;
 }
 .message-markdown li {
-  margin: 4px 0;
-  padding-left: 4px;
+  margin: 6px 0;
+  padding-left: 6px;
+}
+.message-markdown li:first-child {
+  margin-top: 0;
 }
 .message-markdown li::marker {
   color: var(--text-tertiary);

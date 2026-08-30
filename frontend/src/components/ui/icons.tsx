@@ -12,10 +12,11 @@ const base: SVGProps<SVGSVGElement> = {
   "aria-hidden": true,
 }
 
-export function MenuIcon(props: SVGProps<SVGSVGElement>) {
+export function SidebarIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg {...base} {...props}>
-      <path d="M3 6h18M3 12h18M3 18h18" />
+      <rect x="3" y="4" width="18" height="16" rx="2" />
+      <path d="M9 4v16" />
     </svg>
   )
 }
@@ -65,6 +66,14 @@ export function ArrowUpIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg {...base} width={18} height={18} {...props}>
       <path d="M12 19V5M5 12l7-7 7 7" />
+    </svg>
+  )
+}
+
+export function ChevronRightIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg {...base} width={14} height={14} {...props}>
+      <path d="m9 18 6-6-6-6" />
     </svg>
   )
 }

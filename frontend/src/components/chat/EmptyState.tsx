@@ -1,11 +1,22 @@
-export function EmptyState() {
+function greeting(): string {
+  const h = new Date().getHours()
+  if (h < 12) return "Good morning"
+  if (h < 18) return "Good afternoon"
+  return "Good evening"
+}
+
+interface EmptyStateProps {
+  name?: string
+}
+
+export function EmptyState({ name }: EmptyStateProps) {
   return (
-    <div className="flex flex-col items-center text-center">
-      <div className="text-4xl" aria-hidden>
-        🎓
-      </div>
-      <h1 className="mt-4 mb-3 text-[22px] font-semibold tracking-tight text-fg">CampusGuideGPT</h1>
-      <p className="text-[15px] text-muted">your AI guide for Hochschule Harz</p>
+    <div className="flex flex-col items-center gap-2 text-center">
+      <h1 className="font-serif text-[28px] text-fg">
+        {greeting()}
+        {name ? `, ${name}` : ""}
+      </h1>
+      <p className="text-sm text-muted">your AI guide for Hochschule Harz</p>
     </div>
   )
 }

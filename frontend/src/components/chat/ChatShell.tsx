@@ -24,14 +24,14 @@ export function ChatShell({ user }: ChatShellProps) {
   const { messages, activeId, isSending, sendMessage, openConversation, newChat } = useChat(user)
 
   const isDesktop = useMediaQuery(DESKTOP_QUERY)
-  const [sidebarOpen, setSidebarOpen] = useState(
-    () => typeof window === "undefined" || window.matchMedia(DESKTOP_QUERY).matches,
-  )
+  const [sidebarOpen, setSidebarOpen] = useState(false) // closed by default
 
-  // follow the breakpoint on cross; explicit toggles hold until the next cross
+  // collapse the sidebar when the viewport shrinks to mobile; never force it open
   useEffect(() => {
     const mql = window.matchMedia(DESKTOP_QUERY)
-    const onChange = () => setSidebarOpen(mql.matches)
+    const onChange = () => {
+      if (!mql.matches) setSidebarOpen(false)
+    }
     mql.addEventListener("change", onChange)
     return () => mql.removeEventListener("change", onChange)
   }, [])
@@ -106,12 +106,13 @@ export function ChatShell({ user }: ChatShellProps) {
         <Header
           sidebarOpen={sidebarOpen}
           onToggleSidebar={() => setSidebarOpen((v) => !v)}
+          onNewChat={handleNew}
           onSignOut={() => void signOut(auth)}
         />
 
         {messages.length === 0 ? (
-          <div className="flex flex-1 flex-col items-center justify-center gap-8 overflow-y-auto px-4">
-            <EmptyState />
+          <div className="flex flex-1 flex-col items-center justify-center gap-7 overflow-y-auto px-4">
+            <EmptyState name={user.displayName?.trim().split(/\s+/)[0]} />
             <div className="w-full">
               <Composer onSend={sendMessage} isSending={isSending} />
             </div>

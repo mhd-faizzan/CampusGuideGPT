@@ -54,7 +54,7 @@ export const Message = memo(function Message({ message }: MessageProps) {
   if (message.role === "user") {
     return (
       <div className="flex justify-end">
-        <div className="max-w-[85%] whitespace-pre-wrap rounded-3xl rounded-br-lg bg-bubble px-4 py-3 text-[16px] leading-relaxed text-fg">
+        <div className="max-w-[80%] whitespace-pre-wrap rounded-[1.375rem] bg-bubble px-4 py-2.5 text-[16px] leading-[1.6] text-fg">
           {message.content}
         </div>
       </div>
@@ -62,8 +62,8 @@ export const Message = memo(function Message({ message }: MessageProps) {
   }
 
   return (
-    <div className="flex flex-col gap-1.5">
-      <span className="text-[13px] text-muted">CampusGuideGPT</span>
+    <div className="flex flex-col gap-2">
+      <span className="text-[13px] font-medium text-muted">CampusGuideGPT</span>
 
       {message.status === "pending" && message.content === "" ? (
         <TypingDots />

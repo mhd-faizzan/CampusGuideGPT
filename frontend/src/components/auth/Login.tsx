@@ -96,26 +96,29 @@ export function Login() {
   }
 
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-canvas p-5">
+    <div className="flex min-h-dvh flex-col items-center justify-center bg-canvas px-5 py-12">
+      <span className="mb-6 text-sm font-medium tracking-tight text-muted">CampusGuideGPT</span>
+
       <form
         onSubmit={handleSubmit}
-        className="flex w-full max-w-[380px] flex-col gap-3.5 rounded-2xl bg-surface p-8"
-        style={{ boxShadow: "0 0 0 1px var(--border-subtle), 0 8px 30px rgba(0,0,0,0.20)" }}
+        className="flex w-full max-w-[400px] flex-col gap-4 rounded-[1.5rem] bg-sidebar p-8 sm:p-9"
+        style={{
+          boxShadow: "0 0 0 1px var(--border-subtle), 0 16px 50px -12px rgba(0, 0, 0, 0.28)",
+        }}
       >
-        <div className="text-center text-[34px]" aria-hidden>
-          🎓
+        <div className="mb-1 flex flex-col gap-1.5 text-center">
+          <h1 className="text-[24px] font-semibold tracking-tight text-fg">
+            {isSignup ? "Create your account" : "Welcome back"}
+          </h1>
+          <p className="text-[15px] text-muted">
+            {isSignup
+              ? "Sign up to start using CampusGuideGPT"
+              : "Sign in to CampusGuideGPT to continue"}
+          </p>
         </div>
-        <h1 className="text-center text-[22px] font-semibold tracking-tight text-fg">
-          {isSignup ? "Create your account" : "Welcome back"}
-        </h1>
-        <p className="mb-2 text-center text-sm text-muted">
-          {isSignup
-            ? "Sign up to start using CampusGuideGPT"
-            : "Sign in to CampusGuideGPT to continue"}
-        </p>
 
         {isSignup && (
-          <div className="flex gap-2.5">
+          <div className="flex gap-3">
             <TextField
               label="First name"
               hideLabel
@@ -145,35 +148,36 @@ export function Login() {
           required
         />
 
-        <TextField
-          label="Password"
-          hideLabel
-          type={showPassword ? "text" : "password"}
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          minLength={6}
-          trailing={
+        <div className="flex flex-col gap-1.5">
+          <TextField
+            label="Password"
+            hideLabel
+            type={showPassword ? "text" : "password"}
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            minLength={6}
+            trailing={
+              <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                className="rounded px-2 py-1 text-[13px] text-muted transition-colors hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+              >
+                {showPassword ? "Hide" : "Show"}
+              </button>
+            }
+          />
+          {!isSignup && (
             <button
               type="button"
-              onClick={() => setShowPassword((v) => !v)}
-              className="rounded px-2 text-[13px] text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+              onClick={handleReset}
+              className="self-end rounded text-[13px] text-muted transition-colors hover:text-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
             >
-              {showPassword ? "Hide" : "Show"}
+              {resetSent ? "Reset email sent — check your inbox" : "Forgot password?"}
             </button>
-          }
-        />
-
-        {!isSignup && (
-          <button
-            type="button"
-            onClick={handleReset}
-            className="-mt-1 self-end rounded text-[13px] text-muted underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-          >
-            {resetSent ? "Reset email sent — check your inbox" : "Forgot password?"}
-          </button>
-        )}
+          )}
+        </div>
 
         {isSignup && (
           <div className="flex flex-col gap-1.5">
@@ -185,7 +189,7 @@ export function Login() {
               value={isHHStudent}
               onChange={(e) => setIsHHStudent(e.target.value)}
               required
-              className="w-full rounded-xl bg-surface px-3.5 py-3 text-[15px] text-fg outline-none ring-1 ring-inset ring-subtle focus-visible:ring-2 focus-visible:ring-accent"
+              className="w-full rounded-xl bg-surface px-3.5 py-3 text-[15px] text-fg outline-none ring-1 ring-inset ring-subtle transition-shadow focus-visible:ring-2 focus-visible:ring-accent"
             >
               <option value="" disabled>
                 Select an option
@@ -197,7 +201,7 @@ export function Login() {
         )}
 
         {error && (
-          <p role="alert" className="rounded-lg bg-danger/10 px-3 py-2 text-[13px] text-danger">
+          <p role="alert" className="rounded-xl bg-danger/10 px-3.5 py-2.5 text-[13px] text-danger">
             {error}
           </p>
         )}
@@ -213,12 +217,10 @@ export function Login() {
             setError("")
             setResetSent(false)
           }}
-          className="mt-1 rounded text-center text-[13px] text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+          className="rounded text-center text-[13px] text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
         >
           {isSignup ? "Already have an account? " : "Don't have an account? "}
-          <span className="text-fg underline underline-offset-2">
-            {isSignup ? "Sign in" : "Sign up"}
-          </span>
+          <span className="font-medium text-fg">{isSignup ? "Sign in" : "Sign up"}</span>
         </button>
       </form>
     </div>

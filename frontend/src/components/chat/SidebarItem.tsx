@@ -14,19 +14,19 @@ export function SidebarItem({ title, isActive, disabled, onSelect, onDelete }: S
   return (
     <div
       className={cn(
-        "group relative flex items-center rounded-lg pr-1 transition-colors",
-        isActive ? "bg-surface" : "hover:bg-surface/60",
+        "group relative flex items-center rounded-lg pr-1 transition-colors duration-100",
+        isActive ? "bg-fg/[0.07]" : "hover:bg-fg/[0.04]",
       )}
     >
-      {isActive && (
-        <span className="absolute inset-y-1.5 left-0 w-0.5 rounded-full bg-accent" aria-hidden />
-      )}
       <button
         type="button"
         onClick={onSelect}
         disabled={disabled}
         aria-current={isActive ? "page" : undefined}
-        className="min-w-0 flex-1 truncate px-3 py-2.5 text-left text-[13px] text-fg outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:opacity-50"
+        className={cn(
+          "min-w-0 flex-1 truncate rounded-lg px-2.5 py-2 text-left text-[13px] outline-none transition-colors focus-visible:ring-2 focus-visible:ring-accent disabled:opacity-50",
+          isActive ? "text-fg" : "text-muted group-hover:text-fg",
+        )}
       >
         {title}
       </button>
@@ -34,7 +34,7 @@ export function SidebarItem({ title, isActive, disabled, onSelect, onDelete }: S
         label="Delete chat"
         disabled={disabled}
         onClick={onDelete}
-        className="size-8 opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
+        className="size-7 opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
       >
         <TrashIcon />
       </IconButton>

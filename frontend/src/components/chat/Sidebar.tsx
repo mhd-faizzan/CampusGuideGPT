@@ -22,11 +22,11 @@ export function Sidebar({
 }: SidebarProps) {
   return (
     <div className="flex h-full w-[260px] flex-col bg-sidebar">
-      <div className="p-3">
+      <div className="p-2.5">
         <Button
-          variant="secondary"
+          variant="ghost"
           size="sm"
-          className="w-full justify-start"
+          className="w-full justify-start gap-2 text-muted hover:text-fg"
           onClick={onNew}
           disabled={disabled}
         >
@@ -37,9 +37,9 @@ export function Sidebar({
 
       <nav aria-label="Chat history" className="flex-1 overflow-y-auto px-2 pb-3">
         {conversations.length === 0 ? (
-          <p className="px-3 py-2 text-[13px] text-faint">No saved chats yet</p>
+          <p className="px-2.5 py-2 text-[13px] text-faint">No saved chats yet</p>
         ) : (
-          <ul className="flex flex-col gap-0.5">
+          <ul className="flex flex-col gap-px">
             {conversations.map((conversation) => (
               <li key={conversation.id}>
                 <SidebarItem

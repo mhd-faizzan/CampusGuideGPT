@@ -42,12 +42,12 @@ export function Composer({ onSend, isSending }: ComposerProps) {
   return (
     <div className="mx-auto w-full max-w-[768px] px-4 pb-6 pt-3 sm:px-6">
       <div
-        className="flex items-end gap-2 rounded-[1.75rem] px-3 py-2.5"
+        className="flex items-end gap-1.5 rounded-[1.75rem] p-2 pl-4"
         style={{
           background: "var(--composer-bg)",
           backdropFilter: "blur(12px)",
           WebkitBackdropFilter: "blur(12px)",
-          boxShadow: "0 0 0 1px var(--border-subtle), 0 8px 30px rgba(0, 0, 0, 0.30)",
+          boxShadow: "0 0 0 1px rgba(255, 255, 255, 0.06), 0 8px 30px rgba(0, 0, 0, 0.3)",
         }}
       >
         <span id={labelId} className="sr-only">
@@ -61,7 +61,7 @@ export function Composer({ onSend, isSending }: ComposerProps) {
           rows={1}
           aria-labelledby={labelId}
           placeholder="Message CampusGuideGPT…"
-          className="max-h-[200px] flex-1 resize-none self-center bg-transparent px-2 py-1.5 text-[16px] leading-relaxed text-fg outline-none placeholder:text-faint"
+          className="max-h-[200px] flex-1 resize-none self-center bg-transparent py-2 text-[16px] leading-relaxed text-fg outline-none placeholder:text-faint"
         />
         <button
           type="button"
@@ -69,8 +69,10 @@ export function Composer({ onSend, isSending }: ComposerProps) {
           disabled={!canSend}
           aria-label={isSending ? "Sending" : "Send message"}
           className={cn(
-            "flex size-11 shrink-0 items-center justify-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent",
-            canSend ? "bg-fg text-canvas hover:opacity-90" : "bg-surface text-faint",
+            "flex size-9 shrink-0 items-center justify-center rounded-full transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent",
+            canSend
+              ? "bg-fg text-canvas hover:opacity-90"
+              : "bg-fg/10 text-faint",
           )}
         >
           {isSending ? <Spinner className="size-4" /> : <ArrowUpIcon />}
@@ -79,12 +81,12 @@ export function Composer({ onSend, isSending }: ComposerProps) {
 
       <div
         className={cn(
-          "mt-1.5 flex justify-between px-2 text-[11px]",
-          overLimit ? "text-danger" : "text-faint",
+          "mt-2 flex justify-between px-3 text-[11px]",
+          overLimit ? "text-danger" : "text-faint opacity-70",
         )}
       >
-        <span>Enter to send · Shift+Enter for a new line</span>
-        <span>{MAX_LENGTH - value.length}</span>
+        <span>Enter to send &nbsp;·&nbsp; Shift+Enter for a new line</span>
+        <span className="tabular-nums">{MAX_LENGTH - value.length}</span>
       </div>
     </div>
   )
