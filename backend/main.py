@@ -100,6 +100,18 @@ async def ask(request: Request, body: QueryRequest, user=Depends(verify_token)):
     try:
         vector = encode(question)
         hits   = vectors.search(vector)
+
+        if not hits:
+            logger.info("declined (no knowledge base match): %s", question[:80])
+            return {
+                "answer": (
+                    "I'm here to help with questions about Hochschule Harz — admissions, "
+                    "programs, campus life, accommodation, and similar topics. I can't help "
+                    "with anything outside that."
+                ),
+                "sources": [],
+            }
+
         prompt = build_prompt(question, hits)
         answer = llm.complete(prompt)
 
