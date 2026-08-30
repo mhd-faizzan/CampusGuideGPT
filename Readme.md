@@ -5,6 +5,7 @@
 ![Python](https://img.shields.io/badge/Python-3.11-blue)
 ![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688)
 ![React](https://img.shields.io/badge/Frontend-React-61dafb)
+![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178c6)
 ![License](https://img.shields.io/badge/License-MIT-yellow)
 ![Status](https://img.shields.io/badge/Status-Live-brightgreen)
 
@@ -20,10 +21,13 @@ It works by:
 1. taking your question
 2. converting it into a vector (a mathematical representation)
 3. searching a knowledge base in Pinecone for the most relevant answers
-4. passing those answers + your question to an LLM (Llama 3.3 70B via Groq)
+4. passing those answers + your question to an LLM (GPT-OSS 120B via Groq)
 5. returning a clean, conversational response
 
 This approach is called RAG — the model doesn't just guess, it retrieves real context first.
+
+You sign in with your email (Firebase Auth), and every conversation is saved to your
+account in Firestore, so you can reopen an old chat and keep going.
 
 ---
 
@@ -32,17 +36,21 @@ This approach is called RAG — the model doesn't just guess, it retrieves real 
 | Layer | Technology | Why |
 |---|---|---|
 | Backend | FastAPI + Python 3.11 | fast, modern, production-ready |
-| Frontend | React + Vite | clean, fast, component-based |
+| Frontend | React 19 + TypeScript + Vite + Tailwind | typed, fast, component-based |
+| Auth & storage | Firebase (Auth + Firestore) | email login + saved chat history |
 | Embeddings | fastembed (all-MiniLM-L6-v2) | lightweight, no GPU needed |
 | Vector DB | Pinecone | managed vector search |
-| LLM | Llama 3.3 70B via Groq | fast inference, free tier |
-| Deployment | Railway (backend) + Vercel (frontend) | free, auto-deploy from GitHub |
+| LLM | GPT-OSS 120B via Groq | fast inference, free tier |
+| Deployment | Google Cloud Run (backend) + Vercel (frontend) | container backend, auto-deploy frontend |
 
 ---
 
 ## Architecture
 
     Your Question
+         │
+         ▼
+    Firebase Auth (verifies your login token)
          │
          ▼
     Input Sanitizer (blocks prompt injection)
@@ -57,10 +65,10 @@ This approach is called RAG — the model doesn't just guess, it retrieves real 
     Prompt Builder (combines context + instructions)
          │
          ▼
-    Groq LLM — Llama 3.3 70B (generates answer)
+    Groq LLM — GPT-OSS 120B (generates answer)
          │
          ▼
-    Response + Source References
+    Response + Source References  (+ saved to your chat history)
 
 ---
 
@@ -69,7 +77,7 @@ This approach is called RAG — the model doesn't just guess, it retrieves real 
     CampusGuideGPT/
     ├── backend/
     │   ├── main.py                  # FastAPI app — all routes live here
-    │   ├── Dockerfile               # for Railway deployment
+    │   ├── Dockerfile               # container image for Cloud Run
     │   ├── requirements.txt         # pinned dependencies
     │   ├── .env.example             # copy this to .env and fill in your keys
     │   ├── config/
@@ -81,25 +89,33 @@ This approach is called RAG — the model doesn't just guess, it retrieves real 
     │   └── utils/
     │       ├── prompt_builder.py    # builds the prompt with context
     │       ├── sanitizer.py         # blocks prompt injection attacks
+    │       ├── firebase_auth.py     # verifies the Firebase ID token on /ask
     │       └── rate_tracker.py      # global daily usage counter
     └── frontend/
         ├── index.html
-        ├── vite.config.js
+        ├── vite.config.ts
         └── src/
-            ├── App.jsx              # main app, handles API calls
-            ├── main.jsx             # entry point, router setup
-            ├── index.css            # global styles
-            ├── NotFound.jsx         # 404 page
-            └── components/
-                ├── ChatWindow.jsx   # renders the chat messages
-                ├── MessageBubble.jsx # single message with sources
-                └── InputBar.jsx     # text input + send button
+            ├── App.tsx              # auth gate → chat
+            ├── main.tsx             # entry point, router setup
+            ├── lib/
+            │   ├── firebase.ts      # firebase init (auth + firestore)
+            │   ├── api.ts           # calls POST /ask
+            │   └── conversations.ts # saves / loads chats in firestore
+            ├── hooks/               # useAuth, useChat, useConversations, useTheme, …
+            ├── components/
+            │   ├── chat/            # ChatShell, Sidebar, Header, MessageList, Message, Composer
+            │   ├── auth/            # Login, VerifyEmail
+            │   └── ui/              # Button, IconButton, TextField, icons, …
+            ├── types/chat.ts        # shared types
+            ├── routes/NotFound.tsx  # 404 page
+            └── styles/globals.css   # design tokens + tailwind
 
 ---
 
 ## Run Locally
 
-You need: Python 3.11, Node.js 18+, a Pinecone account, and a Groq API key.
+You need: Python 3.11, Node.js 18+, a Pinecone account, a Groq API key, and a Firebase
+project (Email/Password sign-in + Firestore enabled).
 
 **1. clone the repo**
 
@@ -121,6 +137,11 @@ open `backend/.env` and fill in your keys:
     GROQ_API_KEY=your-groq-api-key
     DAILY_LIMIT=100
     ALLOWED_ORIGINS=http://localhost:5173
+    FIREBASE_SERVICE_ACCOUNT=your-firebase-service-account-json
+
+for local dev you can skip `FIREBASE_SERVICE_ACCOUNT` and instead drop the service
+account file at `backend/firebase-key.json` (gitignored) — the app picks it up
+automatically.
 
 **3. run backend**
 
@@ -137,15 +158,29 @@ open a new terminal:
     npm install
     cp .env.example .env
 
-open `frontend/.env` and set:
+open `frontend/.env` and set your backend URL + Firebase web config:
 
     VITE_API_URL=http://localhost:8000
+
+    VITE_FIREBASE_API_KEY=your-firebase-web-api-key
+    VITE_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
+    VITE_FIREBASE_PROJECT_ID=your-project-id
+    VITE_FIREBASE_STORAGE_BUCKET=your-project.appspot.com
+    VITE_FIREBASE_MESSAGING_SENDER_ID=your-sender-id
+    VITE_FIREBASE_APP_ID=your-app-id
 
 **5. run frontend**
 
     npm run dev
 
 open http://localhost:5173
+
+> **note:** for chat history to save, add a Firestore rule so a user can only
+> touch their own data:
+>
+>     match /users/{uid}/{document=**} {
+>       allow read, write: if request.auth != null && request.auth.uid == uid;
+>     }
 
 ---
 
@@ -155,12 +190,13 @@ open http://localhost:5173
 |---|---|---|---|
 | /health | GET | none | server status check |
 | /stats | GET | secret key | daily usage stats |
-| /ask | POST | none | ask a question |
+| /ask | POST | Firebase ID token | ask a question |
 
-**ask a question:**
+**ask a question:** (the token comes from the signed-in frontend user)
 
     POST /ask
     Content-Type: application/json
+    Authorization: Bearer <firebase-id-token>
 
     { "question": "how do I register in Wernigerode?" }
 
@@ -172,22 +208,23 @@ open http://localhost:5173
 
 ## Deployment
 
-**Backend → Railway**
+**Backend → Google Cloud Run**
 
-1. connect GitHub repo on Railway
-2. set root directory to `backend`
-3. set builder to Dockerfile
-4. add environment variables (same as `.env`)
-5. generate a public domain
+1. build the image from `backend/Dockerfile` and push it to Artifact Registry
+   (or connect the GitHub repo for continuous deploys)
+2. deploy the service, pointing the source at `backend`
+3. add environment variables (same as `.env`)
+4. Cloud Run hands you a public `*.run.app` HTTPS URL
 
 **Frontend → Vercel**
 
 1. connect GitHub repo on Vercel
 2. set root directory to `frontend`
-3. add `VITE_API_URL` pointing to your Railway backend URL
+3. add `VITE_API_URL` (your Cloud Run backend URL) + the `VITE_FIREBASE_*` vars
 4. deploy
 
-Every push to `main` auto-deploys both services.
+Vercel auto-deploys the frontend on every push to `main`; wire up Cloud Run's GitHub
+trigger if you want the backend to do the same.
 
 ---
 

@@ -77,3 +77,18 @@ export function ChevronRightIcon(props: SVGProps<SVGSVGElement>) {
     </svg>
   )
 }
+
+/** The campus / knowledge mark, matching the favicon. Fills with currentColor. */
+export function CampusIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg width={24} height={24} viewBox="0 0 24 24" fill="currentColor" aria-hidden {...props}>
+      <circle cx="12" cy="2.7" r="1" />
+      <path d="M12 3.7 2.4 8.6h19.2z" />
+      <rect x="3.4" y="9.5" width="17.2" height="1.7" />
+      <rect x="5.1" y="12" width="2" height="6.2" />
+      <rect x="11" y="12" width="2" height="6.2" />
+      <rect x="16.9" y="12" width="2" height="6.2" />
+      <rect x="2.8" y="19" width="18.4" height="2.1" rx=".4" />
+    </svg>
+  )
+}

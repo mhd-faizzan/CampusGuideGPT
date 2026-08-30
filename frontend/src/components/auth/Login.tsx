@@ -10,6 +10,7 @@ import { doc, setDoc } from "firebase/firestore"
 import { auth, db } from "../../lib/firebase"
 import { Button } from "../ui/Button"
 import { TextField } from "../ui/TextField"
+import { CampusIcon } from "../ui/icons"
 
 function errCode(err: unknown): string {
   if (typeof err === "object" && err !== null && "code" in err) {
@@ -97,7 +98,10 @@ export function Login() {
 
   return (
     <div className="flex min-h-dvh flex-col items-center justify-center bg-canvas px-5 py-12">
-      <span className="mb-6 text-sm font-medium tracking-tight text-muted">CampusGuideGPT</span>
+      <div className="mb-7 flex flex-col items-center gap-2.5">
+        <CampusIcon className="size-7 text-fg" />
+        <span className="text-[17px] font-semibold tracking-tight text-fg">CampusGuideGPT</span>
+      </div>
 
       <form
         onSubmit={handleSubmit}

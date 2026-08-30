@@ -1,7 +1,6 @@
 # CampusGuideGPT — Frontend
 
 React 19 + TypeScript (strict) + Vite + Tailwind CSS v4.
-Design system: [`../DESIGN.md`](../DESIGN.md) · conventions: [`../guidelines.md`](../guidelines.md).
 
 ## Run
 
