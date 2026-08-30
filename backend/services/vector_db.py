@@ -4,7 +4,7 @@ from config.settings import PINECONE_API_KEY, PINECONE_INDEX, PINECONE_HOST, TOP
 
 logger = logging.getLogger(__name__)
 
-MIN_SCORE = 0.55  # filter out irrelevant matches
+MIN_SCORE = 0.45  # filter out irrelevant matches
 
 class VectorService:
     def __init__(self):
