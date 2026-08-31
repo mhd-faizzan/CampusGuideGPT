@@ -1,6 +1,16 @@
+# secrets / local config — never bake into the image
 .env
 env.yaml
 *.save
+firebase-key.json
+*.json
+
+# not needed at runtime
+data/
+scripts/
+usage_counter.json
+
 __pycache__/
 *.pyc
 .DS_Store
+.venv/

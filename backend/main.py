@@ -123,6 +123,7 @@ async def ask(request: Request, body: QueryRequest, user=Depends(verify_token)):
 
         return {"answer": answer, "sources": hits}
 
-    except Exception as e:
-        logger.error("error in /ask: %s", str(e))
-        return JSONResponse(status_code=500, content={"error": str(e)})
+    except Exception:
+        # don't leak internal detail to the client
+        logger.error("error in /ask", exc_info=True)
+        return JSONResponse(status_code=500, content={"error": "internal error"})
